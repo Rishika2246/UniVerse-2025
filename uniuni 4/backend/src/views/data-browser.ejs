@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniVerse Data Browser</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8fafc;
+            color: #1a202c;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container { 
+            display: flex; 
+            height: 100vh; 
+        }
+        
+        /* Sidebar */
+        .sidebar { 
+            width: 280px; 
+            background: white; 
+            border-right: 1px solid #e2e8f0; 
+            display: flex; 
+            flex-direction: column;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        .sidebar-header { 
+            padding: 20px; 
+            border-bottom: 1px solid #e2e8f0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .sidebar-header h1 { 
+            font-size: 1.5em; 
+            font-weight: 600; 
+            margin-bottom: 5px;
+        }
+        .sidebar-header p { 
+            font-size: 0.9em; 
+            opacity: 0.9;
+        }
+        
+        .table-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 0;
+        }
+        .table-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        .table-item:hover { 
+            background: #f7fafc; 
+            border-left-color: #667eea;
+        }
+        .table-item.active { 
+            background: #edf2f7; 
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+        .table-icon { 
+            font-size: 1.2em; 
+            margin-right: 12px; 
+            width: 20px;
+        }
+        .table-info h3 { 
+            font-size: 0.95em; 
+            font-weight: 600; 
+            margin-bottom: 2px;
+        }
+        .table-info p { 
+            font-size: 0.8em; 
+            color: #718096; 
+        }
+        
+        /* Main Content */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            background: white;
+        }
+        
+        /* Toolbar */
+        .toolbar { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 16px 24px; 
+            border-bottom: 1px solid #e2e8f0; 
+            background: white;
+        }
+        .toolbar-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 16px;
+        }
+        .toolbar-title { 
+            font-size: 1.4em; 
+            font-weight: 600; 
+            color: #2d3748;
+        }
+        .search-box { 
+            position: relative;
+        }
+        .search-input { 
+            padding: 8px 12px 8px 36px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            font-size: 0.9em; 
+            width: 250px;
+            transition: border-color 0.2s ease;
+        }
+        .search-input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .search-icon { 
+            position: absolute; 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #a0aec0;
+        }
+        
+        .toolbar-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+        }
+        .btn { 
+            padding: 8px 16px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 6px; 
+            background: white; 
+            cursor: pointer; 
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { 
+            background: #f7fafc; 
+            border-color: #cbd5e0;
+        }
+        .btn-primary { 
+            background: #667eea; 
+            color: white; 
+            border-color: #667eea;
+        }
+        .btn-primary:hover { 
+            background: #5a67d8; 
+        }
+        
+        /* Table Container */
+        .table-container { 
+            flex: 1; 
+            overflow: auto; 
+            position: relative;
+        }
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.9em;
+        }
+        .data-table th { 
+            background: #f7fafc; 
+            padding: 12px 16px; 
+            text-align: left; 
+            font-weight: 600; 
+            color: #4a5568; 
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .data-table th:hover { 
+            background: #edf2f7; 
+            cursor: pointer;
+        }
+        .data-table td { 
+            padding: 12px 16px; 
+            border-bottom: 1px solid #f1f5f9; 
+            vertical-align: top;
+        }
+        .data-table tr:hover { 
+            background: #f8fafc; 
+        }
+        
+        /* Data Cell Styles */
+        .cell-id { 
+            font-family: 'SF Mono', Monaco, monospace; 
+            font-size: 0.8em; 
+            color: #718096; 
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cell-text { 
+            max-width: 200px; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+        .cell-number { 
+            text-align: right; 
+            font-weight: 600; 
+            color: #2d3748;
+        }
+        .cell-date { 
+            font-size: 0.85em; 
+            color: #718096;
+        }
+        .cell-badge { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.75em; 
+            font-weight: 600; 
+            text-transform: uppercase;
+        }
+        .badge-active { background: #c6f6d5; color: #22543d; }
+        .badge-pending { background: #fed7d7; color: #742a2a; }
+        .badge-approved { background: #bee3f8; color: #2a4365; }
+        
+        .cell-relation { 
+            color: #667eea; 
+            cursor: pointer; 
+            text-decoration: underline;
+        }
+        .cell-relation:hover { 
+            color: #5a67d8; 
+        }
+        
+        /* Pagination */
+        .pagination { 
+            display: flex; 
+            align-items: center; 
+            justify-content: between; 
+            padding: 16px 24px; 
+            border-top: 1px solid #e2e8f0; 
+            background: #f8fafc;
+        }
+        .pagination-info { 
+            color: #718096; 
+            font-size: 0.9em;
+        }
+        .pagination-controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            margin-left: auto;
+        }
+        .page-btn { 
+            padding: 6px 12px; 
+            border: 1px solid #e2e8f0; 
+            background: white; 
+            cursor: pointer; 
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .page-btn:hover { 
+            background: #f7fafc; 
+        }
+        .page-btn:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        .page-btn.active { 
+            background: #667eea; 
+            color: white; 
+            border-color: #667eea;
+        }
+        
+        /* Loading State */
+        .loading { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 200px; 
+            color: #718096;
+        }
+        .spinner { 
+            width: 24px; 
+            height: 24px; 
+            border: 2px solid #e2e8f0; 
+            border-top: 2px solid #667eea; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin-right: 12px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Empty State */
+        .empty-state { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 300px; 
+            color: #718096;
+        }
+        .empty-icon { 
+            font-size: 3em; 
+            margin-bottom: 16px; 
+            opacity: 0.5;
+        }
+        
+        /* Record Detail Modal */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0,0,0,0.5); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000;
+        }
+        .modal { 
+            background: white; 
+            border-radius: 12px; 
+            max-width: 800px; 
+            max-height: 80vh; 
+            overflow: auto; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .modal-header { 
+            padding: 24px; 
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-title { 
+            font-size: 1.3em; 
+            font-weight: 600; 
+            color: #2d3748;
+        }
+        .modal-body { 
+            padding: 24px;
+        }
+        .detail-section { 
+            margin-bottom: 24px;
+        }
+        .detail-section h3 { 
+            font-size: 1.1em; 
+            font-weight: 600; 
+            margin-bottom: 12px; 
+            color: #4a5568;
+        }
+        .detail-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 16px;
+        }
+        .detail-item { 
+            background: #f7fafc; 
+            padding: 12px; 
+            border-radius: 6px;
+        }
+        .detail-label { 
+            font-size: 0.8em; 
+            color: #718096; 
+            text-transform: uppercase; 
+            font-weight: 600; 
+            margin-bottom: 4px;
+        }
+        .detail-value { 
+            font-size: 0.95em; 
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🗄️ Data Browser</h1>
+                <p>Prisma Studio-like interface</p>
+                <button onclick="window.open('http://localhost:5556', '_blank')" style="margin-top: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; width: 100%; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    🎨 Open Prisma Studio
+                </button>
+            </div>
+            <div class="table-list" id="tableList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading tables...
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="toolbar-title" id="currentTable">Select a table</div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search records...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+                    <button class="btn" onclick="exportData()">📥 Export</button>
+                    <select class="btn" id="limitSelect">
+                        <option value="20">20 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container" id="tableContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <h3>Select a table to view data</h3>
+                    <p>Choose a table from the sidebar to browse its records</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <div class="pagination-info" id="paginationInfo"></div>
+                <div class="pagination-controls" id="paginationControls"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Record Details</h2>
+                <button class="btn" onclick="closeModal()" style="float: right;">✕ Close</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Record details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTable = null;
+        let currentPage = 1;
+        let currentLimit = 20;
+        let currentSearch = '';
+        let currentSort = { field: 'createdAt', order: 'desc' };
+
+        // Load tables on page load
+        async function loadTables() {
+            try {
+                const response = await fetch('/api/data-browser/schema');
+                const data = await response.json();
+                
+                const tableList = document.getElementById('tableList');
+                tableList.innerHTML = data.tables.map(table => `
+                    <div class="table-item" onclick="selectTable('${table.name}')">
+                        <div class="table-icon">${table.icon}</div>
+                        <div class="table-info">
+                            <h3>${table.name}</h3>
+                            <p>${table.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading tables:', error);
+                document.getElementById('tableList').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error loading tables</p></div>';
+            }
+        }
+
+        // Select table and load data
+        async function selectTable(tableName) {
+            // Update UI
+            document.querySelectorAll('.table-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.table-item').classList.add('active');
+            
+            currentTable = tableName;
+            currentPage = 1;
+            document.getElementById('currentTable').textContent = tableName;
+            
+            await loadTableData();
+        }
+
+        // Load table data
+        async function loadTableData() {
+            if (!currentTable) return;
+            
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '<div class="loading"><div class="spinner"></div>Loading data...</div>';
+            
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: currentLimit,
+                    search: currentSearch,
+                    sortBy: currentSort.field,
+                    sortOrder: currentSort.order
+                });
+                
+                const response = await fetch(`/api/data-browser/table/${currentTable}?${params}`);
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                renderTable(result);
+                renderPagination(result.pagination);
+                
+            } catch (error) {
+                console.error('Error loading table data:', error);
+                tableContainer.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Error loading data</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        // Render table
+        function renderTable(result) {
+            const { data, columns } = result;
+            
+            if (data.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><h3>No records found</h3><p>This table is empty or no records match your search</p></div>';
+                return;
+            }
+            
+            const tableHtml = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            ${columns.map(col => `<th onclick="sortBy('${col}')">${formatColumnName(col)} ${currentSort.field === col ? (currentSort.order === 'asc' ? '↑' : '↓') : ''}</th>`).join('')}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(row => `
+                            <tr>
+                                ${columns.map(col => `<td>${formatCellValue(row, col)}</td>`).join('')}
+                                <td>
+                                    <button class="btn" onclick="viewRecord('${row.id}')">👁️ View</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('tableContainer').innerHTML = tableHtml;
+        }
+
+        // Format column names
+        function formatColumnName(col) {
+            return col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        }
+
+        // Format cell values
+        function formatCellValue(row, column) {
+            const value = getNestedValue(row, column);
+            
+            if (value === null || value === undefined) {
+                return '<span style="color: #a0aec0;">null</span>';
+            }
+            
+            if (column === 'id') {
+                return `<span class="cell-id">${value}</span>`;
+            }
+            
+            if (column.includes('At') || column.includes('Date') || column.includes('Time')) {
+                return `<span class="cell-date">${new Date(value).toLocaleString()}</span>`;
+            }
+            
+            if (column === 'roles' && Array.isArray(value)) {
+                return value.map(r => `<span class="cell-badge badge-active">${r.role.name}</span>`).join(' ');
+            }
+            
+            if (column === 'status') {
+                const badgeClass = value === 'APPROVED' ? 'badge-approved' : value === 'PENDING' ? 'badge-pending' : 'badge-active';
+                return `<span class="cell-badge ${badgeClass}">${value}</span>`;
+            }
+            
+            if (typeof value === 'object' && value.name) {
+                return `<span class="cell-relation">${value.name}</span>`;
+            }
+            
+            if (typeof value === 'object' && value.fullName) {
+                return `<span class="cell-relation">${value.fullName}</span>`;
+            }
+            
+            if (typeof value === 'number') {
+                return `<span class="cell-number">${value}</span>`;
+            }
+            
+            if (typeof value === 'string' && value.length > 50) {
+                return `<span class="cell-text" title="${value}">${value.substring(0, 50)}...</span>`;
+            }
+            
+            return `<span class="cell-text">${value}</span>`;
+        }
+
+        // Get nested object values
+        function getNestedValue(obj, path) {
+            if (path === 'course' && obj.course) return obj.course;
+            if (path === 'student' && obj.student) return obj.student;
+            if (path === 'room' && obj.seat?.room) return obj.seat.room;
+            if (path === 'seat' && obj.seat) return obj.seat;
+            if (path === 'eventsCount' && obj._count) return obj._count.events;
+            if (path === 'seatsCount' && obj._count) return obj._count.seats;
+            if (path === 'grades' && obj.grades) return obj.grades.length;
+            
+            return obj[path];
+        }
+
+        // Render pagination
+        function renderPagination(pagination) {
+            const paginationDiv = document.getElementById('pagination');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const paginationControls = document.getElementById('paginationControls');
+            
+            if (pagination.total === 0) {
+                paginationDiv.style.display = 'none';
+                return;
+            }
+            
+            paginationDiv.style.display = 'flex';
+            
+            const start = (pagination.page - 1) * pagination.limit + 1;
+            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+            
+            paginationInfo.textContent = `Showing ${start}-${end} of ${pagination.total} records`;
+            
+            let controlsHtml = `
+                <button class="page-btn" onclick="goToPage(${pagination.page - 1})" ${pagination.page === 1 ? 'disabled' : ''}>← Previous</button>
+            `;
+            
+            // Page numbers
+            const startPage = Math.max(1, pagination.page - 2);
+            const endPage = Math.min(pagination.pages, pagination.page + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                controlsHtml += `<button class="page-btn ${i === pagination.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            controlsHtml += `
+                <button class="page-btn" onclick="goToPage(${pagination.page + 1})" ${pagination.page === pagination.pages ? 'disabled' : ''}>Next →</button>
+            `;
+            
+            paginationControls.innerHTML = controlsHtml;
+        }
+
+        // Navigation functions
+        function goToPage(page) {
+            currentPage = page;
+            loadTableData();
+        }
+
+        function sortBy(field) {
+            if (currentSort.field === field) {
+                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.order = 'asc';
+            }
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function refreshData() {
+            loadTableData();
+        }
+
+        function exportData() {
+            if (!currentTable) return;
+            
+            const params = new URLSearchParams({
+                page: 1,
+                limit: 1000,
+                search: currentSearch,
+                sortBy: currentSort.field,
+                sortOrder: currentSort.order
+            });
+            
+            window.open(`/api/data-browser/table/${currentTable}?${params}&format=csv`, '_blank');
+        }
+
+        // View record details
+        async function viewRecord(id) {
+            if (!currentTable || !id) return;
+            
+            try {
+                const response = await fetch(`/api/data-browser/record/${currentTable}/${id}`);
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                showRecordModal(result.record, result.tableName);
+                
+            } catch (error) {
+                console.error('Error loading record:', error);
+                alert('Error loading record details: ' + error.message);
+            }
+        }
+
+        // Show record modal
+        function showRecordModal(record, tableName) {
+            document.getElementById('modalTitle').textContent = `${tableName} Record Details`;
+            
+            let modalContent = '';
+            
+            // Basic fields
+            modalContent += '<div class="detail-section"><h3>Basic Information</h3><div class="detail-grid">';
+            Object.entries(record).forEach(([key, value]) => {
+                if (typeof value !== 'object' || value === null) {
+                    modalContent += `
+                        <div class="detail-item">
+                            <div class="detail-label">${formatColumnName(key)}</div>
+                            <div class="detail-value">${value || 'null'}</div>
+                        </div>
+                    `;
+                }
+            });
+            modalContent += '</div></div>';
+            
+            // Related data
+            Object.entries(record).forEach(([key, value]) => {
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    modalContent += `<div class="detail-section"><h3>${formatColumnName(key)}</h3><div class="detail-grid">`;
+                    Object.entries(value).forEach(([subKey, subValue]) => {
+                        if (typeof subValue !== 'object') {
+                            modalContent += `
+                                <div class="detail-item">
+                                    <div class="detail-label">${formatColumnName(subKey)}</div>
+                                    <div class="detail-value">${subValue || 'null'}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    modalContent += '</div></div>';
+                }
+                
+                if (Array.isArray(value) && value.length > 0) {
+                    modalContent += `<div class="detail-section"><h3>${formatColumnName(key)} (${value.length})</h3>`;
+                    value.forEach((item, index) => {
+                        modalContent += `<div class="detail-grid" style="margin-bottom: 16px; padding: 12px; background: #f7fafc; border-radius: 6px;">`;
+                        Object.entries(item).forEach(([subKey, subValue]) => {
+                            if (typeof subValue !== 'object') {
+                                modalContent += `
+                                    <div class="detail-item">
+                                        <div class="detail-label">${formatColumnName(subKey)}</div>
+                                        <div class="detail-value">${subValue || 'null'}</div>
+                                    </div>
+                                `;
+                            }
+                        });
+                        modalContent += '</div>';
+                    });
+                    modalContent += '</div>';
+                }
+            });
+            
+            document.getElementById('modalBody').innerHTML = modalContent;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            currentPage = 1;
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(loadTableData, 500);
+        });
+
+        // Limit change
+        document.getElementById('limitSelect').addEventListener('change', (e) => {
+            currentLimit = parseInt(e.target.value);
+            currentPage = 1;
+            loadTableData();
+        });
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadTables();
+    </script>
+</body>
+</html>

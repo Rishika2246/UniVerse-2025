@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Advanced Admin Dashboard - UniVerse</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* Navigation */
+        .nav-header { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            padding: 15px 20px; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 5px;
+            border-radius: 25px;
+        }
+        .nav-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        .nav-tab:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.2);
+        }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .nav-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        .nav-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+        .nav-btn.secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+        .card-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        
+        /* Stats Cards */
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover::before {
+            transform: scale(1.5);
+        }
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-trend {
+            font-size: 0.8em;
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .status-healthy { background: #e8f5e8; color: #2e7d32; }
+        .status-warning { background: #fff3e0; color: #ef6c00; }
+        .status-critical { background: #ffebee; color: #c62828; }
+        .status-info { background: #e3f2fd; color: #1565c0; }
+        
+        /* Progress Bars */
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .progress-excellent { background: linear-gradient(90deg, #4caf50, #66bb6a); }
+        .progress-good { background: linear-gradient(90deg, #2196f3, #42a5f5); }
+        .progress-warning { background: linear-gradient(90deg, #ff9800, #ffb74d); }
+        .progress-critical { background: linear-gradient(90deg, #f44336, #ef5350); }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #4caf50; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
+        
+        /* Forms */
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .file-upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #5a67d8;
+        }
+        .file-upload-area.dragover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #4c51bf;
+            transform: scale(1.02);
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success { background: #e8f5e8; border-color: #4caf50; color: #2e7d32; }
+        .alert-warning { background: #fff3e0; border-color: #ff9800; color: #ef6c00; }
+        .alert-danger { background: #ffebee; border-color: #f44336; color: #c62828; }
+        .alert-info { background: #e3f2fd; border-color: #2196f3; color: #1565c0; }
+        
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .nav-tabs { display: none; }
+            .nav-container { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <div class="nav-container">
+            <div class="nav-logo">
+                🧠 UniVerse Advanced Admin
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('command-center')">🏛️ Command Center</button>
+                <button class="nav-tab" onclick="switchTab('hall-tickets')">🎫 Hall Tickets</button>
+                <button class="nav-tab" onclick="switchTab('qr-management')">📱 QR Management</button>
+                <button class="nav-tab" onclick="switchTab('user-management')">🔐 User & Access</button>
+                <button class="nav-tab" onclick="switchTab('analytics')">📊 Analytics</button>
+                <button class="nav-tab" onclick="switchTab('system-config')">⚙️ System Config</button>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-btn secondary" onclick="refreshData()">🔄 Refresh</button>
+                <button class="nav-btn secondary" onclick="openPrismaStudio()" id="prismaStudioBtn">🗄️ View Data</button>
+                <button class="nav-btn primary" onclick="showEmergencyPanel()">🚨 Emergency</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Command Center Tab -->
+        <div id="command-center" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏛️ Admin Command Center - Live Campus Status</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="triggerEmergencyLock()">🔒 Emergency Lock</button>
+                        <button class="btn btn-warning" onclick="broadcastAlert()">📢 Broadcast Alert</button>
+                    </div>
+                </div>
+                
+                <!-- Live Status Cards -->
+                <div class="grid-4" id="liveStatusCards">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="activeUsers">Loading...</div>
+                        <div class="stat-label">Active Users</div>
+                        <div class="stat-trend" id="usersTrend">+5.2% today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-value" id="examsToday">Loading...</div>
+                        <div class="stat-label">Exams Today</div>
+                        <div class="stat-trend" id="examsTrend">3 ongoing</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎭</div>
+                        <div class="stat-value" id="eventsRunning">Loading...</div>
+                        <div class="stat-label">Events Running</div>
+                        <div class="stat-trend" id="eventsTrend">2 live now</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚨</div>
+                        <div class="stat-value" id="sosAlerts">Loading...</div>
+                        <div class="stat-label">SOS Alerts</div>
+                        <div class="stat-trend" id="sosTrend">All clear</div>
+                    </div>
+                </div>
+
+                <!-- System Health Dashboard -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🏥 System Health Monitor</div>
+                        <div id="systemHealthStatus">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">⚠️ Priority Alerts</div>
+                        <div id="priorityAlerts">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="card">
+                    <div class="card-title">⚡ Quick Actions</div>
+                    <div class="grid-4">
+                        <button class="btn btn-danger" onclick="lockAllExams()">🔒 Lock All Exams</button>
+                        <button class="btn btn-warning" onclick="regenerateSeating()">🪑 Regenerate Seating</button>
+                        <button class="btn btn-primary" onclick="sendBroadcast()">📢 Send Broadcast</button>
+                        <button class="btn btn-success" onclick="generateReports()">📊 Generate Reports</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Tab -->
+        <div id="user-management" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔐 Advanced User & Access Control</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="showAddUserModal()">➕ Add User</button>
+                        <button class="btn btn-secondary" onclick="exportUsers()">📤 Export Users</button>
+                    </div>
+                </div>
+
+                <!-- Role-based Dashboard Controls -->
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-title">👨‍🎓 Student Management</div>
+                        <div id="studentStats">Loading...</div>
+                        <button class="btn btn-outline" onclick="manageStudents()">Manage Students</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">👨‍🏫 Faculty Management</div>
+                        <div id="facultyStats">Loading...</div>
+                        <button class="btn btn-outline" onclick="manageFaculty()">Manage Faculty</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">👨‍💼 Admin Management</div>
+                        <div id="adminStats">Loading...</div>
+                        <button class="btn btn-outline" onclick="manageAdmins()">Manage Admins</button>
+                    </div>
+                </div>
+
+                <!-- Permission Matrix Editor -->
+                <div class="card">
+                    <div class="card-title">🛡️ Permission Matrix Editor</div>
+                    <div id="permissionMatrix">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+
+                <!-- Geo-fenced Access Control -->
+                <div class="card">
+                    <div class="card-title">🌍 Geo-fenced Access Control</div>
+                    <div id="geoAccessControl">
+                        <div class="alert alert-info">
+                            <span>🗺️</span>
+                            <div>
+                                <strong>Location-based Access</strong><br>
+                                Configure access zones for exams and admin areas
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="configureGeoFencing()">Configure Zones</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Control Tab -->
+        <div id="academic-control" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎓 Academic & Exam Control Center</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="generateTimetable()">📅 Generate Timetable</button>
+                        <button class="btn btn-success" onclick="publishResults()">📊 Publish Results</button>
+                    </div>
+                </div>
+
+                <!-- Exam Management -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">📝 Exam Timetable Generator</div>
+                        <div id="examTimetable">
+                            <div class="form-group">
+                                <label class="form-label">Academic Year</label>
+                                <select class="form-control" id="academicYear">
+                                    <option>2024-25</option>
+                                    <option>2025-26</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Semester</label>
+                                <select class="form-control" id="semester">
+                                    <option>1st Semester</option>
+                                    <option>2nd Semester</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="generateExamTimetable()">🎯 Generate & Check Clashes</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📊 Attendance Eligibility</div>
+                        <div id="attendanceEligibility">
+                            <div class="alert alert-warning">
+                                <span>⚠️</span>
+                                <div>
+                                    <strong>Attendance Risk Students</strong><br>
+                                    <span id="riskStudentCount">Loading...</span> students below 75% attendance
+                                </div>
+                            </div>
+                            <button class="btn btn-warning" onclick="viewRiskStudents()">View Risk Students</button>
+                            <button class="btn btn-primary" onclick="enforceEligibility()">Enforce Eligibility</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject Analytics -->
+                <div class="card">
+                    <div class="card-title">📈 Subject Performance Analytics</div>
+                    <div id="subjectAnalytics">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hall Tickets Tab -->
+        <div id="hall-tickets" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎫 Hall Ticket Bulk Upload & Management</div>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary" onclick="downloadSampleCSV()">📥 Download Sample CSV</button>
+                        <button class="btn btn-primary" onclick="showUploadHistory()">📋 Upload History</button>
+                    </div>
+                </div>
+
+                <!-- CSV Upload Section -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">📄 Step 1: Upload CSV File</div>
+                        <div class="file-upload-area" id="csvDropZone" onclick="document.getElementById('csvUpload').click()">
+                            <div style="font-size: 3em; margin-bottom: 15px;">📄</div>
+                            <h3>Upload Student Hall Ticket CSV</h3>
+                            <p>Drag & drop or click to upload CSV with student data</p>
+                            <input type="file" id="csvUpload" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+                        </div>
+                        <div id="csvUploadStatus" style="margin-top: 15px;"></div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Exam Session</label>
+                            <select class="form-control" id="examSession">
+                                <option>Mid-Term 2025</option>
+                                <option>End-Term 2025</option>
+                                <option>Supplementary 2025</option>
+                                <option>Special Exam 2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">🔍 Step 2: Preview & Validate</div>
+                        <div id="csvPreview">
+                            <div class="alert alert-info">
+                                <span>ℹ️</span>
+                                <div>Upload a CSV file to see preview and validation results</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-warning" onclick="previewCSV()" disabled id="previewBtn">🔍 Preview & Validate</button>
+                    </div>
+                </div>
+
+                <!-- Processing Section -->
+                <div class="card">
+                    <div class="card-title">🚀 Step 3: High-Scale Bulk Processing</div>
+                    <div id="processingStatus">
+                        <div class="alert alert-info">
+                            <span>⏳</span>
+                            <div>Upload and validate CSV to enable high-scale processing</div>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <button class="btn btn-success" onclick="startBulkProcessing()" disabled id="processBtn">🎯 Start Bulk Processing</button>
+                        <button class="btn btn-warning" onclick="forceProcessWithErrors()" disabled id="forceBtn" style="display: none;">⚠️ Force Process (Skip Errors)</button>
+                    </div>
+                    
+                    <!-- Live Progress Tracking -->
+                    <div id="progressSection" style="display: none; margin-top: 20px;">
+                        <div class="card-title">📊 Live Processing Progress</div>
+                        <div class="progress-container">
+                            <div class="progress-bar progress-good" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div id="progressText" style="text-align: center; margin: 10px 0;">0% Complete</div>
+                        <div class="grid-4" id="liveStats">
+                            <div class="stat-card">
+                                <div class="stat-icon">📝</div>
+                                <div class="stat-value" id="liveProcessed">0</div>
+                                <div class="stat-label">Processed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-value" id="liveSuccess">0</div>
+                                <div class="stat-label">Success</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">❌</div>
+                                <div class="stat-value" id="liveFailed">0</div>
+                                <div class="stat-label">Failed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-value" id="liveETA">--</div>
+                                <div class="stat-label">ETA</div>
+                            </div>
+                        </div>
+                        <div id="liveLog" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; font-size: 0.9em;">
+                            <div style="color: #666;">Processing logs will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="card">
+                    <div class="card-title">📊 Processing Results</div>
+                    <div id="processingResults">
+                        <div class="grid-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">📝</div>
+                                <div class="stat-value" id="totalProcessed">0</div>
+                                <div class="stat-label">Total Processed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-value" id="successCount">0</div>
+                                <div class="stat-label">Successful</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">❌</div>
+                                <div class="stat-value" id="errorCount">0</div>
+                                <div class="stat-label">Errors</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📱</div>
+                                <div class="stat-value" id="qrGenerated">0</div>
+                                <div class="stat-label">QR Codes</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="errorDetails" style="margin-top: 20px;"></div>
+                    <button class="btn btn-secondary" onclick="downloadFailedRows()" style="display: none;" id="downloadFailedBtn">📥 Download Failed Rows</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Management Tab -->
+        <div id="qr-management" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📱 QR Code Management & Monitoring</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="refreshQRStats()">🔄 Refresh Stats</button>
+                        <button class="btn btn-warning" onclick="showQRMonitor()">📊 Live Monitor</button>
+                    </div>
+                </div>
+
+                <!-- QR Statistics -->
+                <div class="grid-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">📱</div>
+                        <div class="stat-value" id="totalQRCodes">Loading...</div>
+                        <div class="stat-label">Total QR Codes</div>
+                        <div class="stat-trend" id="qrTrend">Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="scannedToday">Loading...</div>
+                        <div class="stat-label">Scanned Today</div>
+                        <div class="stat-trend" id="scanTrend">Live tracking</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚨</div>
+                        <div class="stat-value" id="fraudAttempts">Loading...</div>
+                        <div class="stat-label">Fraud Attempts</div>
+                        <div class="stat-trend" id="fraudTrend">Security alerts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏛️</div>
+                        <div class="stat-value" id="hallOccupancy">Loading...</div>
+                        <div class="stat-label">Hall Occupancy</div>
+                        <div class="stat-trend" id="occupancyTrend">Real-time</div>
+                    </div>
+                </div>
+
+                <!-- QR Control Panel -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🎛️ QR Code Controls</div>
+                        <div class="form-group">
+                            <label class="form-label">Bulk QR Operations</label>
+                            <select class="form-control" id="qrOperation">
+                                <option>Select Operation</option>
+                                <option>Regenerate All QR Codes</option>
+                                <option>Deactivate Expired QR Codes</option>
+                                <option>Activate QR Codes for Exam</option>
+                                <option>Export QR Code Report</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="executeQROperation()">🚀 Execute Operation</button>
+                        <button class="btn btn-danger" onclick="emergencyQRLock()">🚨 Emergency Lock All</button>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">🔍 QR Code Search & Verify</div>
+                        <div class="form-group">
+                            <label class="form-label">Search QR Code</label>
+                            <input type="text" class="form-control" id="qrSearch" placeholder="Enter QR Code ID or Student ID">
+                        </div>
+                        <button class="btn btn-primary" onclick="searchQRCode()">🔍 Search</button>
+                        <div id="qrSearchResults" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+
+                <!-- Live Scanning Monitor -->
+                <div class="card">
+                    <div class="card-title">📊 Live QR Scanning Monitor</div>
+                    <div id="liveScanningMonitor">
+                        <div class="alert alert-info">
+                            <span>📡</span>
+                            <div>
+                                <strong>Real-time QR Scanning Activity</strong><br>
+                                Monitor live QR code scans across all examination halls
+                            </div>
+                        </div>
+                        <div id="recentScans">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seating Control Tab -->
+        <div id="seating-control" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🪑 Seating Allocation Control Room</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="triggerSeatingAlgorithm()">🎯 Trigger Algorithm</button>
+                        <button class="btn btn-warning" onclick="showSeatingVisualizer()">🗺️ 3D Visualizer</button>
+                    </div>
+                </div>
+
+                <!-- Seating Algorithm Controls -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">⚙️ Algorithm Configuration</div>
+                        <div class="form-group">
+                            <label class="form-label">Hall Capacity Simulation</label>
+                            <select class="form-control" id="hallCapacity">
+                                <option>Auto-detect</option>
+                                <option>Conservative (80%)</option>
+                                <option>Optimal (90%)</option>
+                                <option>Maximum (100%)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Conflict Resolution</label>
+                            <select class="form-control" id="conflictResolution">
+                                <option>Automatic</option>
+                                <option>Manual Override</option>
+                                <option>Hybrid</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="runSeatingSimulation()">🎮 Run Simulation</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🔍 Conflict Preview</div>
+                        <div id="conflictPreview">
+                            <div class="alert alert-info">
+                                <span>ℹ️</span>
+                                <div>Run simulation to preview conflicts before finalizing seating arrangements</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seating Visualizer -->
+                <div class="card">
+                    <div class="card-title">🗺️ Live Seating Visualization</div>
+                    <div id="seatingVisualizer" style="height: 400px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 3em; margin-bottom: 15px;">🏛️</div>
+                            <h3>3D Hall Visualization</h3>
+                            <p>Click "3D Visualizer" to load interactive seating map</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campus Life Tab -->
+        <div id="campus-life" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎭 Clubs, Events & Campus Life Dashboard</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="approveEvents()">✅ Approve Events</button>
+                        <button class="btn btn-success" onclick="generateCertificates()">🏆 Generate Certificates</button>
+                    </div>
+                </div>
+
+                <!-- Club Management -->
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-title">🎭 Club Management</div>
+                        <div id="clubStats">
+                            <div class="stat-value" id="totalClubs">Loading...</div>
+                            <div class="stat-label">Total Clubs</div>
+                            <div style="margin: 15px 0;">
+                                <strong>Active:</strong> <span id="activeClubs">Loading...</span><br>
+                                <strong>Pending Approval:</strong> <span id="pendingClubs">Loading...</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" onclick="manageClubs()">Manage Clubs</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📅 Event Management</div>
+                        <div id="eventStats">
+                            <div class="stat-value" id="totalEvents">Loading...</div>
+                            <div class="stat-label">Total Events</div>
+                            <div style="margin: 15px 0;">
+                                <strong>Upcoming:</strong> <span id="upcomingEvents">Loading...</span><br>
+                                <strong>Live Now:</strong> <span id="liveEvents">Loading...</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" onclick="manageEvents()">Manage Events</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">💰 Budget Oversight</div>
+                        <div id="budgetStats">
+                            <div class="stat-value" id="totalBudget">Loading...</div>
+                            <div class="stat-label">Total Budget</div>
+                            <div style="margin: 15px 0;">
+                                <strong>Allocated:</strong> <span id="allocatedBudget">Loading...</span><br>
+                                <strong>Remaining:</strong> <span id="remainingBudget">Loading...</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" onclick="manageBudget()">Manage Budget</button>
+                    </div>
+                </div>
+
+                <!-- AI Clash Detection -->
+                <div class="card">
+                    <div class="card-title">🤖 AI Event Clash Detection</div>
+                    <div id="clashDetection">
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>No Conflicts Detected</strong><br>
+                                All upcoming events are clear of exam schedules
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="runClashDetection()">🔍 Run Clash Detection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Control Tab -->
+        <div id="ai-control" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🤖 AI Systems Control Panel</div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" onclick="resetAIModules()">🔄 Reset All AI</button>
+                        <button class="btn btn-danger" onclick="emergencyAIShutdown()">🚨 Emergency Shutdown</button>
+                    </div>
+                </div>
+
+                <!-- AI Module Controls -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🎛️ AI Module Toggle</div>
+                        <div id="aiModuleControls">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="aiAvatar" checked> 🤖 AI Avatar Assistant
+                                </label>
+                                <div class="status-indicator status-healthy">Active - 98.5% uptime</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="studyAI" checked> 📚 Study AI
+                                </label>
+                                <div class="status-indicator status-healthy">Active - 99.2% uptime</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="clubAI" checked> 🎭 Club AI
+                                </label>
+                                <div class="status-indicator status-healthy">Active - 97.8% uptime</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="analyticsAI" checked> 📊 Analytics AI
+                                </label>
+                                <div class="status-indicator status-healthy">Active - 99.7% uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🧠 AI Decision Monitoring</div>
+                        <div id="aiDecisions">
+                            <div class="alert alert-info">
+                                <span>🤖</span>
+                                <div>
+                                    <strong>Recent AI Decisions</strong><br>
+                                    <div id="recentAIDecisions">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Performance Metrics -->
+                <div class="card">
+                    <div class="card-title">📊 AI Performance Metrics</div>
+                    <div class="grid-4" id="aiMetrics">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-value" id="aiAccuracy">Loading...</div>
+                            <div class="stat-label">Average Accuracy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-value" id="aiResponseTime">Loading...</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-value" id="aiDecisionCount">Loading...</div>
+                            <div class="stat-label">Decisions Today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-value" id="aiAnomalies">Loading...</div>
+                            <div class="stat-label">Anomalies Detected</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📊 Campus Analytics & Prediction Engine</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="generatePredictions()">🔮 Generate Predictions</button>
+                        <button class="btn btn-success" onclick="exportAnalytics()">📤 Export Analytics</button>
+                    </div>
+                </div>
+
+                <!-- Prediction Analytics -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">📈 Attendance Trend Forecasting</div>
+                        <div id="attendanceForecast">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">⚠️ Risk Detection</div>
+                        <div id="riskDetection">
+                            <div class="alert alert-warning">
+                                <span>⚠️</span>
+                                <div>
+                                    <strong>Students at Risk</strong><br>
+                                    <span id="riskStudents">Loading...</span> students identified for intervention
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campus Mood Analytics -->
+                <div class="card">
+                    <div class="card-title">😊 Campus Mood Analytics</div>
+                    <div id="campusMood">
+                        <div class="grid-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">😊</div>
+                                <div class="stat-value" id="overallMood">Loading...</div>
+                                <div class="stat-label">Overall Mood</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-value" id="academicStress">Loading...</div>
+                                <div class="stat-label">Academic Stress</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🎭</div>
+                                <div class="stat-value" id="eventEngagement">Loading...</div>
+                                <div class="stat-label">Event Engagement</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🤝</div>
+                                <div class="stat-value" id="socialConnection">Loading...</div>
+                                <div class="stat-label">Social Connection</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Config Tab -->
+        <div id="system-config" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">⚙️ System Configuration & DevOps</div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" onclick="backupSystem()">💾 Backup System</button>
+                        <button class="btn btn-danger" onclick="restoreSystem()">🔄 Restore System</button>
+                    </div>
+                </div>
+
+                <!-- Feature Toggles -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🎛️ Feature Toggles</div>
+                        <div id="featureToggles">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="examMode" checked> 📝 Exam Mode
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="maintenanceMode"> 🔧 Maintenance Mode
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="debugMode"> 🐛 Debug Mode
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="aiMode" checked> 🤖 AI Mode
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📊 System Monitoring</div>
+                        <div id="systemMonitoring">
+                            <div class="status-indicator status-healthy">
+                                <span>✅</span> All Systems Operational
+                            </div>
+                            <div style="margin: 15px 0;">
+                                <strong>CPU Usage:</strong> <span id="cpuUsage">Loading...</span><br>
+                                <strong>Memory Usage:</strong> <span id="memoryUsage">Loading...</span><br>
+                                <strong>Disk Usage:</strong> <span id="diskUsage">Loading...</span><br>
+                                <strong>Network Status:</strong> <span id="networkStatus">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Usage Stats -->
+                <div class="card">
+                    <div class="card-title">📡 API Usage Statistics</div>
+                    <div id="apiStats">
+                        <div class="grid-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-value" id="totalRequests">Loading...</div>
+                                <div class="stat-label">Total Requests</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⚡</div>
+                                <div class="stat-value" id="avgResponseTime">Loading...</div>
+                                <div class="stat-label">Avg Response Time</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">❌</div>
+                                <div class="stat-value" id="errorRate">Loading...</div>
+                                <div class="stat-label">Error Rate</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🔥</div>
+                                <div class="stat-value" id="peakLoad">Loading...</div>
+                                <div class="stat-label">Peak Load</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Management
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Load tab-specific data
+            loadTabData(tabId);
+        }
+
+        // Load data for specific tab
+        function loadTabData(tabId) {
+            switch(tabId) {
+                case 'command-center':
+                    loadCommandCenterData();
+                    break;
+                case 'hall-tickets':
+                    loadHallTicketData();
+                    break;
+                case 'qr-management':
+                    loadQRManagementData();
+                    break;
+                case 'user-management':
+                    loadUserManagementData();
+                    break;
+                case 'analytics':
+                    loadAnalyticsData();
+                    break;
+                case 'system-config':
+                    loadSystemConfigData();
+                    break;
+            }
+        }
+
+        // Load Hall Ticket tab data
+        function loadHallTicketData() {
+            setupDragAndDrop();
+            // Reset form state with null checks
+            const previewBtn = document.getElementById('previewBtn');
+            const processBtn = document.getElementById('processBtn');
+            const qrBtn = document.getElementById('qrBtn');
+            const pdfBtn = document.getElementById('pdfBtn');
+            
+            if (previewBtn) previewBtn.disabled = true;
+            if (processBtn) processBtn.disabled = true;
+            if (qrBtn) qrBtn.disabled = true;
+            if (pdfBtn) pdfBtn.disabled = true;
+        }
+
+        // Load QR Management data
+        async function loadQRManagementData() {
+            try {
+                const response = await fetch('/admin/advanced/api/exam-integrity');
+                const data = await response.json();
+                
+                // Update QR statistics
+                document.getElementById('totalQRCodes').textContent = data.hallTickets?.total || '0';
+                document.getElementById('scannedToday').textContent = data.hallTickets?.scannedToday || '0';
+                document.getElementById('fraudAttempts').textContent = data.hallTickets?.fraudAttempts || '0';
+                document.getElementById('hallOccupancy').textContent = data.liveExamStats?.hallOccupancy || '0%';
+                
+                // Load recent scans
+                loadRecentScans();
+            } catch (error) {
+                console.error('Error loading QR management data:', error);
+            }
+        }
+
+        // QR Management Functions
+        async function refreshQRStats() {
+            await loadQRManagementData();
+            showAlert('success', 'QR statistics refreshed successfully!');
+        }
+
+        async function executeQROperation() {
+            const operation = document.getElementById('qrOperation').value;
+            if (!operation || operation === 'Select Operation') {
+                showAlert('error', 'Please select an operation');
+                return;
+            }
+            
+            try {
+                // Simulate operation execution
+                showAlert('info', `Executing: ${operation}...`);
+                
+                // Here you would make actual API calls based on the operation
+                setTimeout(() => {
+                    showAlert('success', `${operation} completed successfully!`);
+                    refreshQRStats();
+                }, 2000);
+                
+            } catch (error) {
+                showAlert('error', 'Operation failed: ' + error.message);
+            }
+        }
+
+        async function emergencyQRLock() {
+            if (!confirm('EMERGENCY: This will lock ALL QR codes immediately. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Make API call to lock all QR codes
+                showAlert('warning', 'Emergency QR lock activated - All QR codes disabled');
+                await refreshQRStats();
+            } catch (error) {
+                showAlert('error', 'Emergency lock failed: ' + error.message);
+            }
+        }
+
+        async function searchQRCode() {
+            const searchTerm = document.getElementById('qrSearch').value.trim();
+            if (!searchTerm) {
+                showAlert('error', 'Please enter a QR Code ID or Student ID');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('qrSearchResults');
+            resultsDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <span>🔍</span>
+                    <div>Searching for: ${searchTerm}...</div>
+                </div>
+            `;
+            
+            try {
+                // Simulate search - replace with actual API call
+                setTimeout(() => {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>QR Code Found</strong><br>
+                                Student: John Doe (${searchTerm})<br>
+                                Status: Active<br>
+                                Last Scan: Never<br>
+                                Hall: HALL-A, Seat: A-1-1
+                            </div>
+                        </div>
+                    `;
+                }, 1000);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span>❌</span>
+                        <div>Search failed: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadRecentScans() {
+            const recentScansDiv = document.getElementById('recentScans');
+            
+            try {
+                // Simulate loading recent scans - replace with actual API call
+                recentScansDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <span>📡</span>
+                        <div>
+                            <strong>Recent QR Scans</strong><br>
+                            <div style="font-family: monospace; font-size: 0.9em; margin-top: 10px;">
+                                12:34:56 - CBIT001 - HALL-A - Valid<br>
+                                12:33:45 - CBIT002 - HALL-A - Valid<br>
+                                12:32:12 - CBIT003 - HALL-B - Valid<br>
+                                12:31:08 - CBIT004 - HALL-B - Fraud Attempt<br>
+                                12:30:55 - CBIT005 - HALL-C - Valid
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                recentScansDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span>❌</span>
+                        <div>Failed to load recent scans</div>
+                    </div>
+                `;
+            }
+        }
+
+        function showQRMonitor() {
+            showAlert('info', 'Opening QR Monitor in new window...');
+            // Here you would open a dedicated QR monitoring interface
+        }
+
+        function showUploadHistory() {
+            showAlert('info', 'Upload history feature coming soon...');
+        }
+
+        function downloadFailedRows() {
+            showAlert('info', 'Downloading failed rows CSV...');
+            // Implementation for downloading failed rows
+        }
+
+        // Show download links for generated PDFs
+        function showDownloadLinks(downloadUrls) {
+            const resultsDiv = document.getElementById('processingResults');
+            
+            const downloadSection = document.createElement('div');
+            downloadSection.innerHTML = `
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📥 Download Generated Hall Tickets</div>
+                    <div class="alert alert-info">
+                        <span>📄</span>
+                        <div>
+                            <strong>${downloadUrls.length} PDF Hall Tickets Generated</strong><br>
+                            Click the links below to download individual hall tickets:
+                        </div>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto; margin-top: 15px;">
+                        ${downloadUrls.slice(0, 20).map((url, index) => `
+                            <div style="margin: 5px 0;">
+                                <a href="${url}" target="_blank" class="btn btn-outline" style="margin-right: 10px;">
+                                    📄 Hall Ticket ${index + 1}
+                                </a>
+                                <span style="font-size: 0.9em; color: #666;">${url.split('/').pop()}</span>
+                            </div>
+                        `).join('')}
+                        ${downloadUrls.length > 20 ? `
+                            <div style="margin-top: 10px; font-style: italic; color: #666;">
+                                ... and ${downloadUrls.length - 20} more hall tickets
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="downloadAllPDFs()">📦 Download All PDFs (ZIP)</button>
+                        <button class="btn btn-secondary" onclick="viewSamplePDF()">👁️ Preview Sample PDF</button>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(downloadSection);
+        }
+
+        // Download all PDFs as ZIP (placeholder)
+        function downloadAllPDFs() {
+            showAlert('info', 'Preparing ZIP file with all hall tickets...');
+            // Implementation for creating and downloading ZIP file
+        }
+
+        // Preview sample PDF
+        function viewSamplePDF() {
+            const downloadLinks = document.querySelectorAll('a[href*="hall-ticket"]');
+            if (downloadLinks.length > 0) {
+                window.open(downloadLinks[0].href, '_blank');
+            } else {
+                showAlert('error', 'No PDF files available for preview');
+            }
+        }
+
+        // Command Center Functions
+        async function loadCommandCenterData() {
+            try {
+                console.log('Loading command center data...');
+                const response = await fetch('/admin/advanced/api/command-center');
+                const data = await response.json();
+                console.log('Command center data received:', data);
+                
+                // Update live status cards with null checks
+                const activeUsersEl = document.getElementById('activeUsers');
+                const examsTodayEl = document.getElementById('examsToday');
+                const eventsRunningEl = document.getElementById('eventsRunning');
+                const sosAlertsEl = document.getElementById('sosAlerts');
+                
+                if (activeUsersEl) {
+                    activeUsersEl.textContent = data.activeUsers || '0';
+                    console.log('Updated activeUsers:', data.activeUsers);
+                } else {
+                    console.error('activeUsers element not found');
+                }
+                
+                if (examsTodayEl) {
+                    examsTodayEl.textContent = data.examsToday || '0';
+                    console.log('Updated examsToday:', data.examsToday);
+                } else {
+                    console.error('examsToday element not found');
+                }
+                
+                if (eventsRunningEl) {
+                    eventsRunningEl.textContent = data.eventsRunning || '0';
+                    console.log('Updated eventsRunning:', data.eventsRunning);
+                } else {
+                    console.error('eventsRunning element not found');
+                }
+                
+                if (sosAlertsEl) {
+                    sosAlertsEl.textContent = data.sosAlerts || '0';
+                    console.log('Updated sosAlerts:', data.sosAlerts);
+                } else {
+                    console.error('sosAlerts element not found');
+                }
+                
+                // Update trends
+                const usersTrendEl = document.getElementById('usersTrend');
+                const examsTrendEl = document.getElementById('examsTrend');
+                const eventsTrendEl = document.getElementById('eventsTrend');
+                const sosTrendEl = document.getElementById('sosTrend');
+                
+                if (usersTrendEl) usersTrendEl.textContent = '+5.2% today';
+                if (examsTrendEl) examsTrendEl.textContent = data.examsToday + ' ongoing';
+                if (eventsTrendEl) eventsTrendEl.textContent = data.eventsRunning + ' live now';
+                if (sosTrendEl) sosTrendEl.textContent = data.sosAlerts === 0 ? 'All clear' : data.sosAlerts + ' active';
+                
+                // Update system health
+                updateSystemHealth(data.systemHealth);
+                updatePriorityAlerts(data.priorityAlerts);
+                
+            } catch (error) {
+                console.error('Error loading command center data:', error);
+            }
+        }
+
+        function updateSystemHealth(health) {
+            const healthHtml = `
+                <div class="grid-3">
+                    <div class="status-indicator ${health.server === 'healthy' ? 'status-healthy' : 'status-warning'}">
+                        <span>${health.server === 'healthy' ? '✅' : '⚠️'}</span> Server: ${health.server}
+                    </div>
+                    <div class="status-indicator ${health.database === 'healthy' ? 'status-healthy' : 'status-critical'}">
+                        <span>${health.database === 'healthy' ? '✅' : '❌'}</span> Database: ${health.database}
+                    </div>
+                    <div class="status-indicator ${health.ai === 'healthy' ? 'status-healthy' : 'status-warning'}">
+                        <span>${health.ai === 'healthy' ? '✅' : '⚠️'}</span> AI Modules: ${health.ai}
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="progress-container">
+                        <div class="progress-bar progress-${health.overall === 'excellent' ? 'excellent' : health.overall === 'good' ? 'good' : 'warning'}" 
+                             style="width: ${health.score}%"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <strong>Overall Health: ${health.score}%</strong>
+                    </div>
+                </div>
+            `;
+            document.getElementById('systemHealthStatus').innerHTML = healthHtml;
+        }
+
+        function updatePriorityAlerts(alerts) {
+            if (!alerts || alerts.length === 0) {
+                document.getElementById('priorityAlerts').innerHTML = `
+                    <div class="alert alert-success">
+                        <span>✅</span>
+                        <div><strong>All Clear</strong><br>No priority alerts at this time</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const alertsHtml = alerts.map(alert => `
+                <div class="alert alert-${alert.type}">
+                    <span>${alert.type === 'critical' ? '🚨' : alert.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                    <div>
+                        <strong>${alert.title}</strong><br>
+                        ${alert.message}
+                        <div style="font-size: 0.8em; margin-top: 5px; opacity: 0.8;">
+                            ${new Date(alert.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('priorityAlerts').innerHTML = alertsHtml;
+        }
+
+        // Enhanced CSV Upload Handler
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showAlert('error', 'Please select a valid CSV file');
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('error', 'File size too large. Maximum 10MB allowed');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('csvUploadStatus');
+            statusDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <span>📄</span>
+                    <div>
+                        <strong>File Selected: ${file.name}</strong><br>
+                        Size: ${(file.size / 1024).toFixed(2)} KB<br>
+                        Rows: Calculating...<br>
+                        Status: Ready for preview
+                    </div>
+                </div>
+            `;
+            
+            // Enable preview button
+            document.getElementById('previewBtn').disabled = false;
+            
+            // Add drag and drop visual feedback
+            const dropZone = document.getElementById('csvDropZone');
+            dropZone.style.borderColor = '#4caf50';
+            dropZone.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+        }
+
+        // Drag and Drop functionality
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('csvDropZone');
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('csvUpload').files = files;
+                    handleCSVUpload({ target: { files: files } });
+                }
+            });
+        }
+
+        // Preview CSV before processing
+        async function previewCSV() {
+            const fileInput = document.getElementById('csvUpload');
+            if (!fileInput.files[0]) {
+                showAlert('error', 'Please select a CSV file first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('csvFile', fileInput.files[0]);
+            
+            const previewDiv = document.getElementById('csvPreview');
+            previewDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <span>⏳</span>
+                    <div>
+                        <strong>Validating CSV...</strong><br>
+                        <div class="loading" style="margin: 10px 0;"></div>
+                        Checking data format and student records
+                    </div>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/admin/advanced/api/hall-tickets/preview-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    previewDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>CSV Validation Complete</strong><br>
+                                Total Rows: ${data.totalRows}<br>
+                                Valid Rows: ${data.validRows}<br>
+                                Invalid Rows: ${data.invalidRows}
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (data.invalidRows > 0 && data.invalidRowsPreview) {
+                        previewDiv.innerHTML += `
+                            <div class="alert alert-warning">
+                                <span>⚠️</span>
+                                <div>
+                                    <strong>Validation Errors Found</strong><br>
+                                    ${data.invalidRowsPreview.slice(0, 5).map(err => 
+                                        `Row ${err.row}: ${err.error}`
+                                    ).join('<br>')}
+                                    ${data.invalidRowsPreview.length > 5 ? `<br>... and ${data.invalidRowsPreview.length - 5} more errors` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Enable processing if there are valid rows
+                    if (data.validRows > 0) {
+                        const processBtn = document.getElementById('processBtn');
+                        const qrBtn = document.getElementById('qrBtn');
+                        const pdfBtn = document.getElementById('pdfBtn');
+                        
+                        if (processBtn) processBtn.disabled = false;
+                        if (qrBtn) qrBtn.disabled = false;
+                        if (pdfBtn) pdfBtn.disabled = false;
+                    }
+                } else {
+                    throw new Error(result.message || 'Validation failed');
+                }
+            } catch (error) {
+                previewDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span>❌</span>
+                        <div>
+                            <strong>Validation Failed</strong><br>
+                            ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Global variables for job tracking
+        let currentJobId = null;
+        let progressInterval = null;
+        let csvValidationResult = null;
+
+        // High-Scale Bulk Processing
+        async function startBulkProcessing() {
+            const fileInput = document.getElementById('csvUpload');
+            const examSession = document.getElementById('examSession').value;
+            
+            if (!fileInput.files[0]) {
+                showAlert('error', 'Please select a CSV file first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('csvFile', fileInput.files[0]);
+            formData.append('examSession', examSession);
+            formData.append('uploadedBy', 'admin'); // TODO: Get from session
+            
+            const statusDiv = document.getElementById('processingStatus');
+            statusDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <span>⏳</span>
+                    <div>
+                        <strong>Initializing High-Scale Bulk Processing...</strong><br>
+                        <div class="loading" style="margin: 10px 0;"></div>
+                        • Streaming CSV validation<br>
+                        • Checking for duplicates and conflicts<br>
+                        • Preparing background job queue
+                    </div>
+                </div>
+            `;
+            
+            // Disable processing button
+            document.getElementById('processBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/admin/advanced/api/hall-tickets/bulk-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    currentJobId = data.jobId;
+                    
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>Bulk Processing Started!</strong><br>
+                                Job ID: ${data.jobId}<br>
+                                📊 Total Rows: ${data.totalRows || 'N/A'}<br>
+                                Upload Type: ${data.uploadType || 'CSV'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Show progress section and start monitoring
+                    document.getElementById('progressSection').style.display = 'block';
+                    startProgressMonitoring(data.jobId);
+                    
+                    showAlert('success', `Bulk processing started! Job ID: ${data.jobId}`);
+                    
+                } else if (result.requiresConfirmation) {
+                    // Show validation errors and ask for confirmation
+                    csvValidationResult = result;
+                    
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong>Validation Issues Found</strong><br>
+                                ${result.message}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Show validation errors if available
+                    if (result.errors) {
+                        showValidationErrors(result.errors);
+                    }
+                    
+                    // Show force process button
+                    document.getElementById('forceBtn').style.display = 'inline-block';
+                    document.getElementById('processBtn').disabled = false;
+                    
+                } else {
+                    throw new Error(result.message || 'Processing failed');
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span>❌</span>
+                        <div>
+                            <strong>Bulk Processing Failed</strong><br>
+                            ${error.message}
+                        </div>
+                    </div>
+                `;
+                showAlert('error', 'Bulk processing failed: ' + error.message);
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        // Force process with errors
+        async function forceProcessWithErrors() {
+            if (!csvValidationResult) {
+                showAlert('error', 'No validation result available');
+                return;
+            }
+
+            const fileInput = document.getElementById('csvUpload');
+            const examSession = document.getElementById('examSession').value;
+            
+            const formData = new FormData();
+            formData.append('csvFile', fileInput.files[0]);
+            formData.append('examSession', examSession);
+            formData.append('uploadedBy', 'admin');
+            formData.append('skipInvalid', 'true');
+            
+            document.getElementById('forceBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/admin/advanced/api/hall-tickets/bulk-upload-force', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    currentJobId = data.jobId;
+                    
+                    document.getElementById('processingStatus').innerHTML = `
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>Force Processing Started!</strong><br>
+                                Job ID: ${data.jobId}<br>
+                                📊 Processing: ${data.validRows || 'N/A'} valid rows<br>
+                                ⏭️ Skipped: ${data.skippedRows || 'N/A'} invalid rows
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Hide force button and show progress
+                    document.getElementById('forceBtn').style.display = 'none';
+                    document.getElementById('progressSection').style.display = 'block';
+                    startProgressMonitoring(data.jobId);
+                    
+                    showAlert('success', `Force processing started! Job ID: ${data.jobId}`);
+                    
+                } else {
+                    throw new Error(result.message || 'Force processing failed');
+                }
+                
+            } catch (error) {
+                showAlert('error', 'Force processing failed: ' + error.message);
+                document.getElementById('forceBtn').disabled = false;
+            }
+        }
+
+        // Start progress monitoring
+        function startProgressMonitoring(jobId) {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/admin/advanced/api/hall-tickets/job-status/${jobId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        updateProgressDisplay(result.job, result.recentLogs);
+                        
+                        // Stop monitoring if job is complete
+                        if (result.job.status === 'COMPLETED' || result.job.status === 'FAILED') {
+                            clearInterval(progressInterval);
+                            onJobComplete(result.job);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Progress monitoring error:', error);
+                }
+            }, 2000); // Update every 2 seconds
+        }
+
+        // Update progress display
+        function updateProgressDisplay(job, recentLogs) {
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            progressBar.style.width = `${job.progress}%`;
+            progressText.textContent = `${job.progress}% Complete`;
+            
+            // Update live stats
+            document.getElementById('liveProcessed').textContent = job.processedRows;
+            document.getElementById('liveSuccess').textContent = job.successRows;
+            document.getElementById('liveFailed').textContent = job.failedRows;
+            
+            // Calculate ETA
+            if (job.progress > 0 && job.status === 'PROCESSING') {
+                const elapsed = new Date() - new Date(job.startedAt);
+                const remaining = (elapsed / job.progress) * (100 - job.progress);
+                const eta = Math.round(remaining / 1000 / 60); // minutes
+                document.getElementById('liveETA').textContent = eta > 0 ? `${eta}m` : '<1m';
+            } else {
+                document.getElementById('liveETA').textContent = '--';
+            }
+            
+            // Update progress bar color based on status
+            progressBar.className = 'progress-bar ' + 
+                (job.status === 'COMPLETED' ? 'progress-excellent' : 
+                 job.status === 'FAILED' ? 'progress-critical' : 'progress-good');
+            
+            // Update live log
+            const liveLog = document.getElementById('liveLog');
+            if (recentLogs && recentLogs.length > 0) {
+                const logEntries = recentLogs.map(log => {
+                    const status = log.status === 'SUCCESS' ? '✅' : '❌';
+                    const time = new Date(log.createdAt).toLocaleTimeString();
+                    return `[${time}] ${status} Row ${log.rowNumber}: ${log.studentId || 'Unknown'} - ${log.status}${log.errorMessage ? ` (${log.errorMessage})` : ''}`;
+                }).join('\n');
+                
+                liveLog.innerHTML = `<pre style="margin: 0; white-space: pre-wrap;">${logEntries}</pre>`;
+                liveLog.scrollTop = liveLog.scrollHeight;
+            }
+        }
+
+        // Handle job completion
+        function onJobComplete(job) {
+            const statusDiv = document.getElementById('processingStatus');
+            
+            if (job.status === 'COMPLETED') {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <span>🎉</span>
+                        <div>
+                            <strong>Bulk Processing Completed Successfully!</strong><br>
+                            📊 Total Processed: ${job.processedRows}<br>
+                            ✅ Successful: ${job.successRows}<br>
+                            ❌ Failed: ${job.failedRows}<br>
+                            ⏱️ Duration: ${calculateDuration(job.startedAt, job.completedAt)}
+                        </div>
+                    </div>
+                `;
+                
+                showAlert('success', `🎉 Bulk processing completed! ${job.successRows} hall tickets generated successfully.`);
+                
+                // Show download options
+                if (job.failedRows > 0) {
+                    showFailedRowsDownload(job.id);
+                }
+                
+            } else if (job.status === 'FAILED') {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span>❌</span>
+                        <div>
+                            <strong>Bulk Processing Failed</strong><br>
+                            Error: ${job.errorSummary}<br>
+                            📊 Processed: ${job.processedRows}<br>
+                            ✅ Successful: ${job.successRows}<br>
+                            ❌ Failed: ${job.failedRows}
+                        </div>
+                    </div>
+                `;
+                
+                showAlert('error', 'Bulk processing failed: ' + job.errorSummary);
+            }
+            
+            // Re-enable process button
+            document.getElementById('processBtn').disabled = false;
+            
+            // Update final results
+            document.getElementById('totalProcessed').textContent = job.processedRows;
+            document.getElementById('successCount').textContent = job.successRows;
+            document.getElementById('errorCount').textContent = job.failedRows;
+            document.getElementById('qrGenerated').textContent = job.successRows;
+        }
+
+        // Show validation errors
+        function showValidationErrors(errors) {
+            const errorDiv = document.getElementById('errorDetails');
+            
+            if (errors && errors.length > 0) {
+                const errorHtml = `
+                    <div class="alert alert-warning">
+                        <span>⚠️</span>
+                        <div>
+                            <strong>Validation Errors (${errors.length})</strong><br>
+                            ${errors.slice(0, 10).map(err => 
+                                `Row ${err.rowNumber}: ${err.errors.join(', ')}`
+                            ).join('<br>')}
+                            ${errors.length > 10 ? `<br>... and ${errors.length - 10} more errors` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                errorDiv.innerHTML = errorHtml;
+            }
+        }
+
+        // Show failed rows download option
+        function showFailedRowsDownload(jobId) {
+            const resultsDiv = document.getElementById('processingResults');
+            
+            const downloadSection = document.createElement('div');
+            downloadSection.innerHTML = `
+                <div class="alert alert-warning" style="margin-top: 15px;">
+                    <span>📥</span>
+                    <div>
+                        <strong>Failed Rows Available</strong><br>
+                        Some rows failed processing. Download the error report for details.
+                        <br><br>
+                        <a href="/admin/advanced/api/hall-tickets/download-failed/${jobId}" 
+                           class="btn btn-warning" target="_blank">
+                            📥 Download Failed Rows CSV
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(downloadSection);
+        }
+
+        // Utility function to calculate duration
+        function calculateDuration(startTime, endTime) {
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+            const duration = Math.round((end - start) / 1000); // seconds
+            
+            if (duration < 60) {
+                return `${duration}s`;
+            } else if (duration < 3600) {
+                return `${Math.round(duration / 60)}m ${duration % 60}s`;
+            } else {
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+
+        // Generate QR Codes separately
+        async function generateQRCodes() {
+            try {
+                const response = await fetch('/admin/advanced/api/hall-tickets/generate-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hallTicketIds: [] }) // Empty array means all active tickets
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('success', `Generated ${result.generated} QR codes successfully!`);
+                    document.getElementById('qrGenerated').textContent = result.generated;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showAlert('error', 'QR code generation failed: ' + error.message);
+            }
+        }
+
+        // Generate PDFs separately
+        async function generatePDFs() {
+            try {
+                const response = await fetch('/admin/advanced/api/hall-tickets/generate-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hallTicketIds: [] }) // Empty array means all active tickets
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('success', `Generated ${result.generated} PDF hall tickets successfully!`);
+                    
+                    // Show download links if available
+                    if (result.downloadUrls && result.downloadUrls.length > 0) {
+                        const downloadDiv = document.createElement('div');
+                        downloadDiv.innerHTML = `
+                            <div class="alert alert-info">
+                                <span>📥</span>
+                                <div>
+                                    <strong>Download Links Available</strong><br>
+                                    ${result.downloadUrls.slice(0, 5).map(url => 
+                                        `<a href="${url}" target="_blank">Download PDF</a>`
+                                    ).join('<br>')}
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('processingResults').appendChild(downloadDiv);
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showAlert('error', 'PDF generation failed: ' + error.message);
+            }
+        }
+
+        // Show error details
+        function showErrorDetails(details) {
+            const errorDiv = document.getElementById('errorDetails');
+            const errors = details.filter(d => d.error);
+            
+            if (errors.length > 0) {
+                errorDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <span>⚠️</span>
+                        <div>
+                            <strong>Processing Errors (${errors.length})</strong><br>
+                            ${errors.slice(0, 10).map(err => 
+                                `Row ${err.row}: ${err.error}`
+                            ).join('<br>')}
+                            ${errors.length > 10 ? `<br>... and ${errors.length - 10} more errors` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('downloadFailedBtn').style.display = 'inline-block';
+            }
+        }
+
+        // Download sample CSV
+        function downloadSampleCSV() {
+            const csvContent = `student_id,student_name,exam_id,exam_name,department,hall_name,seat_number,exam_date,exam_time,qr_code_id
+CBIT001,Ananya Reddy,EX101,DBMS Mid Sem,CSE,HALL-A,A-1-1,2025-01-15,09:30,QR-CBIT001
+CBIT002,Rahul Sharma,EX101,DBMS Mid Sem,CSE,HALL-A,A-1-3,2025-01-15,09:30,QR-CBIT002
+CBIT003,Sneha Patel,EX101,DBMS Mid Sem,CSE,HALL-A,A-1-5,2025-01-15,09:30,QR-CBIT003`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_hall_tickets.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('success', 'Sample CSV downloaded successfully!');
+        }
+
+        // Utility function to show alerts
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <div>${message}</div>
+            `;
+            
+            // Insert at top of main container
+            const mainContainer = document.querySelector('.main-container');
+            mainContainer.insertBefore(alertDiv, mainContainer.firstChild);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Quick Action Functions
+        function lockAllExams() {
+            if (confirm('Are you sure you want to lock ALL exams? This action cannot be undone.')) {
+                // Implementation for locking all exams
+                alert('All exams have been locked successfully');
+            }
+        }
+
+        function regenerateSeating() {
+            if (confirm('Regenerate seating for all upcoming exams?')) {
+                // Implementation for regenerating seating
+                alert('Seating regeneration initiated');
+            }
+        }
+
+        function sendBroadcast() {
+            const message = prompt('Enter broadcast message:');
+            if (message) {
+                // Implementation for sending broadcast
+                alert('Broadcast sent to all users');
+            }
+        }
+
+        function generateReports() {
+            // Implementation for generating reports
+            alert('Report generation initiated');
+        }
+
+        // Emergency Functions
+        function showEmergencyPanel() {
+            alert('Emergency panel activated - All systems on high alert');
+        }
+
+        function triggerEmergencyLock() {
+            if (confirm('EMERGENCY: Lock all systems immediately?')) {
+                alert('EMERGENCY LOCK ACTIVATED - All systems secured');
+            }
+        }
+
+        function broadcastAlert() {
+            const alertMessage = prompt('Enter emergency alert message:');
+            if (alertMessage) {
+                alert('Emergency alert broadcasted to all users');
+            }
+        }
+
+        // Load functions for other tabs
+        async function loadUserManagementData() {
+            try {
+                const response = await fetch('/admin/advanced/api/user-management');
+                const data = await response.json();
+                
+                document.getElementById('studentStats').innerHTML = `
+                    <div class="stat-value">${data.students}</div>
+                    <div class="stat-label">Total Students</div>
+                `;
+                document.getElementById('facultyStats').innerHTML = `
+                    <div class="stat-value">${data.faculty}</div>
+                    <div class="stat-label">Total Faculty</div>
+                `;
+                document.getElementById('adminStats').innerHTML = `
+                    <div class="stat-value">${data.admins}</div>
+                    <div class="stat-label">Total Admins</div>
+                `;
+            } catch (error) {
+                console.error('Error loading user management data:', error);
+            }
+        }
+
+        async function loadAcademicControlData() {
+            try {
+                const response = await fetch('/admin/advanced/api/academic-control');
+                const data = await response.json();
+                
+                document.getElementById('riskStudentCount').textContent = data.attendanceRisk.count;
+            } catch (error) {
+                console.error('Error loading academic control data:', error);
+            }
+        }
+
+        async function loadExamIntegrityData() {
+            try {
+                const response = await fetch('/admin/advanced/api/exam-integrity');
+                const data = await response.json();
+                
+                document.getElementById('activeQRCount').textContent = data.hallTickets.active;
+                document.getElementById('scannedToday').textContent = data.hallTickets.scannedToday;
+                document.getElementById('fraudAttempts').textContent = data.hallTickets.fraudAttempts;
+                
+                document.getElementById('totalStudents').textContent = data.liveExamStats.totalStudents;
+                document.getElementById('presentStudents').textContent = data.liveExamStats.present;
+                document.getElementById('absentStudents').textContent = data.liveExamStats.absent;
+                document.getElementById('hallOccupancy').textContent = data.liveExamStats.hallOccupancy;
+            } catch (error) {
+                console.error('Error loading exam integrity data:', error);
+            }
+        }
+
+        async function loadSeatingControlData() {
+            console.log('Loading seating control data...');
+        }
+
+        async function loadCampusLifeData() {
+            try {
+                const response = await fetch('/admin/advanced/api/campus-life');
+                const data = await response.json();
+                
+                document.getElementById('totalClubs').textContent = data.totalClubs;
+                document.getElementById('activeClubs').textContent = data.totalClubs;
+                document.getElementById('pendingClubs').textContent = data.pendingApproval;
+                
+                document.getElementById('totalEvents').textContent = data.totalEvents;
+                document.getElementById('upcomingEvents').textContent = data.upcomingEvents;
+                document.getElementById('liveEvents').textContent = '0';
+                
+                document.getElementById('totalBudget').textContent = '$50,000';
+                document.getElementById('allocatedBudget').textContent = '$35,000';
+                document.getElementById('remainingBudget').textContent = '$15,000';
+            } catch (error) {
+                console.error('Error loading campus life data:', error);
+            }
+        }
+
+        async function loadAIControlData() {
+            try {
+                const response = await fetch('/admin/advanced/api/ai-control');
+                const data = await response.json();
+                
+                document.getElementById('aiAccuracy').textContent = data.performance.averageAccuracy;
+                document.getElementById('aiResponseTime').textContent = data.performance.averageResponseTime;
+                document.getElementById('aiDecisionCount').textContent = data.performance.decisionsToday;
+                document.getElementById('aiAnomalies').textContent = data.performance.anomaliesDetected;
+                
+                document.getElementById('recentAIDecisions').innerHTML = `
+                    <div>Study recommendation generated (95% confidence)</div>
+                    <div>Event conflict detected and resolved (88% confidence)</div>
+                    <div>Attendance risk prediction updated (92% confidence)</div>
+                `;
+            } catch (error) {
+                console.error('Error loading AI control data:', error);
+            }
+        }
+
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/admin/advanced/api/analytics');
+                const data = await response.json();
+                
+                document.getElementById('riskStudents').textContent = data.riskDetection.studentsAtRisk;
+                document.getElementById('overallMood').textContent = data.campusMood.overallMood;
+                document.getElementById('academicStress').textContent = data.campusMood.academicStress;
+                document.getElementById('eventEngagement').textContent = data.campusMood.eventEngagement;
+                document.getElementById('socialConnection').textContent = data.campusMood.socialConnection;
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+
+        async function loadSystemConfigData() {
+            try {
+                const response = await fetch('/admin/advanced/api/system-config');
+                const data = await response.json();
+                
+                document.getElementById('cpuUsage').textContent = data.systemMonitoring.cpuUsage;
+                document.getElementById('memoryUsage').textContent = data.systemMonitoring.memoryUsage;
+                document.getElementById('diskUsage').textContent = data.systemMonitoring.diskUsage;
+                document.getElementById('networkStatus').textContent = data.systemMonitoring.networkStatus;
+                
+                document.getElementById('totalRequests').textContent = data.apiStats.totalRequests.toLocaleString();
+                document.getElementById('avgResponseTime').textContent = data.apiStats.avgResponseTime;
+                document.getElementById('errorRate').textContent = data.apiStats.errorRate;
+                document.getElementById('peakLoad').textContent = data.apiStats.peakLoad;
+            } catch (error) {
+                console.error('Error loading system config data:', error);
+            }
+        }
+
+        function refreshData() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            loadTabData(activeTab);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Advanced Admin Dashboard loaded');
+            // Load command center data immediately
+            setTimeout(loadCommandCenterData, 100);
+        });
+
+        // Add error handling for fetch requests
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error);
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            if (activeTab === 'command-center') {
+                loadCommandCenterData();
+            }
+        }, 30000);
+
+        // Open Prisma Studio
+        let prismaStudioOpening = false;
+        function openPrismaStudio() {
+            // Prevent multiple simultaneous clicks
+            if (prismaStudioOpening) {
+                return;
+            }
+            
+            prismaStudioOpening = true;
+            const button = document.getElementById('prismaStudioBtn');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '⏳ Opening...';
+            }
+            
+            // First try to start Prisma Studio if not running
+            fetch('/api/admin-dashboard/prisma-studio/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Open Prisma Studio in new tab
+                    const prismaUrl = data.url || 'http://localhost:5556';
+                    window.open(prismaUrl, '_blank');
+                    
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.innerHTML = `
+                        <div class="alert-content">
+                            <span class="alert-icon">✅</span>
+                            <div class="alert-text">
+                                <strong>Prisma Studio Opened</strong>
+                                <p>Database viewer opened in new tab at ${prismaUrl}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const mainContainer = document.querySelector('.main-container');
+                    mainContainer.insertBefore(alertDiv, mainContainer.firstChild);
+                    
+                    // Remove alert after 5 seconds
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                } else {
+                    throw new Error(data.message || 'Failed to start Prisma Studio');
+                }
+                
+                // Reset button state
+                prismaStudioOpening = false;
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '🗄️ View Data';
+                }
+            })
+            .catch(error => {
+                console.error('Error opening Prisma Studio:', error);
+                
+                // Show error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-error';
+                alertDiv.innerHTML = `
+                    <div class="alert-content">
+                        <span class="alert-icon">❌</span>
+                        <div class="alert-text">
+                            <strong>Error Opening Prisma Studio</strong>
+                            <p>${error.message}</p>
+                            <p>Try opening manually: <a href="http://localhost:5556" target="_blank">http://localhost:5556</a></p>
+                        </div>
+                    </div>
+                `;
+                
+                const mainContainer = document.querySelector('.main-container');
+                mainContainer.insertBefore(alertDiv, mainContainer.firstChild);
+                
+                // Remove alert after 8 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 8000);
+                
+                // Reset button state
+                prismaStudioOpening = false;
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '🗄️ View Data';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

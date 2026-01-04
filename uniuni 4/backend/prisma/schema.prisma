@@ -1,0 +1,800 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  passwordHash  String
+  fullName      String
+  rollNo        String?       @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  roles         UserRole[]
+  hallTickets   HallTicket[]
+  studentCourses StudentCourse[]
+  mindMaps      MindMap[]
+  createdEvents  Event[]       @relation("EventCreator")
+  managedClubs  Club[]         @relation("ClubCoordinator")
+  seatingAllocations SeatingAllocation[]
+  eventAttendances EventAttendee[]
+  
+  // Advanced admin relations
+  sosAlerts           SosAlert[]        @relation("UserSosAlerts")
+  resolvedSosAlerts   SosAlert[]        @relation("ResolvedSosAlerts")
+  qrScans             QrScan[]          @relation("QrScans")
+  fraudAttempts       FraudAttempt[]    @relation("FraudAttempts")
+  createdAlerts       SystemAlert[]     @relation("CreatedAlerts")
+  notifications       Notification[]    @relation("UserNotifications")
+  aiDecisions         AiDecision[]      @relation("AiDecisions")
+  overriddenAiDecisions AiDecision[]    @relation("OverriddenAiDecisions")
+  studentAttendance   Attendance[]      @relation("StudentAttendance")
+  markedAttendance    Attendance[]      @relation("MarkedAttendance")
+  approvedExpenses    BudgetExpense[]   @relation("ApprovedExpenses")
+  configUpdates       SystemConfig[]    @relation("ConfigUpdates")
+  bulkUploadJobs      BulkUploadJob[]   @relation("BulkUploadJobs")
+  examSeating         ExamSeating[]     @relation("ExamSeating")
+  
+  // Certificate Vault relations
+  certificates        Certificate[]     @relation("StudentCertificates")
+  verifiedCertificates Certificate[]    @relation("VerifiedCertificates")
+  certificateFolders  CertificateFolder[] @relation("StudentCertificateFolders")
+  
+  // Chat relations
+  chatMessages        ChatMessage[]     @relation("ChatMessages")
+  chatReactions       ChatReaction[]    @relation("ChatReactions")
+}
+
+// Role model for role-based access control
+model Role {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique // STUDENT, ADMIN, SEATING_MANAGER, CLUB_COORDINATOR
+  users     UserRole[]
+  createdAt DateTime  @default(now())
+}
+
+// Join table for User and Role many-to-many relationship
+model UserRole {
+  userId    String   @map("user_id")
+  roleId    Int      @map("role_id")
+  assignedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+// Course model for academic courses
+model Course {
+  id          String         @id @default(uuid())
+  code        String         @unique
+  name        String
+  semester    Int
+  department  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relations
+  syllabus    Syllabus[]
+  exams       Exam[]
+  studentCourses StudentCourse[]
+  attendance  Attendance[]   @relation("CourseAttendance")
+}
+
+// Syllabus model for course content
+model Syllabus {
+  id          String    @id @default(uuid())
+  courseId    String    @map("course_id")
+  content     String    // Could be JSON string or markdown
+  sourcePdfUrl String?  @map("source_pdf_url")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  course      Course    @relation(fields: [courseId], references: [id])
+  mindMaps    MindMap[]
+}
+
+// Student enrollment in courses
+model StudentCourse {
+  id         String   @id @default(uuid())
+  studentId  String   @map("student_id")
+  courseId   String   @map("course_id")
+  enrolledAt DateTime @default(now())
+  
+  // Relations
+  student    User     @relation(fields: [studentId], references: [id])
+  course     Course   @relation(fields: [courseId], references: [id])
+  
+  @@unique([studentId, courseId])
+}
+
+// Exam model for tests and assessments
+model Exam {
+  id          String    @id @default(uuid())
+  courseId    String    @map("course_id")
+  examType    String    // MID1, MID2, END, etc.
+  examDate    DateTime
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  course      Course    @relation(fields: [courseId], references: [id])
+  hallTickets HallTicket[]
+  seatingAllocations SeatingAllocation[]
+  examSeating ExamSeating[]
+  bulkUploadJobs BulkUploadJob[]
+}
+
+// Mind map model for study support
+model MindMap {
+  id         String    @id @default(uuid())
+  studentId  String    @map("student_id")
+  syllabusId String    @map("syllabus_id")
+  title      String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  // Relations
+  student    User      @relation(fields: [studentId], references: [id])
+  syllabus   Syllabus  @relation(fields: [syllabusId], references: [id])
+  nodes      MindMapNode[] @relation("MindMapNodes")
+}
+
+// Nodes for mind maps
+model MindMapNode {
+  id         String    @id @default(uuid())
+  mindmapId  String    @map("mindmap_id")
+  parentId   String?   @map("parent_id")
+  label      String
+  notes      String?
+  orderIndex Int       @default(0)
+  
+  // Relations
+  mindmap    MindMap   @relation("MindMapNodes", fields: [mindmapId], references: [id])
+  parent     MindMapNode? @relation("ChildNodes", fields: [parentId], references: [id])
+  children   MindMapNode[] @relation("ChildNodes")
+  resources  StudyResource[]
+}
+
+// Study resources linked to mind map nodes
+model StudyResource {
+  id           String      @id @default(uuid())
+  mindmapNodeId String     @map("mindmap_node_id")
+  type         String      // VIDEO, PDF, LINK, etc.
+  url          String
+  title        String
+  
+  // Relations
+  mindmapNode  MindMapNode @relation(fields: [mindmapNodeId], references: [id])
+}
+
+// Club model for student organizations
+model Club {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  description   String?
+  coordinatorId String    @map("coordinator_id")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  coordinator  User      @relation("ClubCoordinator", fields: [coordinatorId], references: [id])
+  events       Event[]
+  budgets      Budget[]  @relation("ClubBudgets")
+}
+
+// Event model for club activities
+model Event {
+  id            String    @id @default(uuid())
+  clubId        String    @map("club_id")
+  title         String
+  description   String?
+  startDateTime DateTime  @map("start_date_time")
+  endDateTime   DateTime  @map("end_date_time")
+  location      String?
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdById   String    @map("created_by_id")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  club         Club      @relation(fields: [clubId], references: [id])
+  createdBy    User      @relation("EventCreator", fields: [createdById], references: [id])
+  documents    EventDocument[]
+  attendees    EventAttendee[]
+  budgets      Budget[]  @relation("EventBudgets")
+}
+
+// Documents associated with events
+model EventDocument {
+  id        String    @id @default(uuid())
+  eventId   String    @map("event_id")
+  fileUrl   String    @map("file_url")
+  fileType  String    @map("file_type") // PDF, DOC, etc.
+  uploadedAt DateTime  @default(now())
+  
+  // Relations
+  event      Event     @relation(fields: [eventId], references: [id])
+}
+
+model EventAttendee {
+  id        String   @id @default(uuid())
+  eventId   String   @map("event_id")
+  userId    String   @map("user_id")
+  status    String   @default("GOING")
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+}
+
+// Hall tickets for exams - Enhanced for advanced admin
+model HallTicket {
+  id               String    @id @default(uuid())
+  studentId        String    @map("student_id")
+  examId           String    @map("exam_id")
+  hallTicketNumber String?   @map("hall_ticket_number")
+  examSession      String?   @map("exam_session")
+  seatNumber       String?   @map("seat_number")
+  hallName         String?   @map("hall_name")
+  examDate         DateTime?
+  examTime         String?   @map("exam_time")
+  status           String    @default("ACTIVE") // ACTIVE, USED, EXPIRED, CANCELLED, LOCKED
+  issueDate        DateTime  @default(now())
+  qrToken          String    @unique @map("qr_token")
+  qrImagePath      String?   @map("qr_image_path")
+  pdfPath          String?   @map("pdf_path")
+  gate             String?
+  block            String?
+  invigilatorName  String?   @map("invigilator_name")
+  isLocked         Boolean   @default(false) @map("is_locked")
+  lockedAt         DateTime? @map("locked_at")
+  bulkUploadJobId  String?   @map("bulk_upload_job_id")
+  
+  // Bulk upload and delivery tracking
+  originalFileName String?   @map("original_file_name") // Original uploaded file name (roll number based)
+  deliveryStatus   String    @default("PENDING") @map("delivery_status") // PENDING, DELIVERED, FAILED, ACKNOWLEDGED
+  deliveredAt      DateTime? @map("delivered_at")
+  acknowledgedAt   DateTime? @map("acknowledged_at")
+  failureReason    String?   @map("failure_reason")
+  branch           String?   // Student's branch/department for reporting
+  
+  // Relations
+  student         User            @relation(fields: [studentId], references: [id])
+  exam            Exam            @relation(fields: [examId], references: [id])
+  qrScans         QrScan[]
+  bulkUploadJob   BulkUploadJob?  @relation(fields: [bulkUploadJobId], references: [id])
+  hallTicketQrs   HallTicketQr[]
+  
+  @@unique([studentId, examId])
+  @@unique([seatNumber, hallName, examId])
+}
+
+// Room for exam seating
+model Room {
+  id       String   @id @default(uuid())
+  name     String   @unique // e.g., A-101
+  capacity Int
+  rows     Int
+  cols     Int
+  
+  // Relations
+  seats    Seat[]
+}
+
+// Seats within rooms
+model Seat {
+  id         String   @id @default(uuid())
+  roomId     String   @map("room_id")
+  rowNumber  Int      @map("row_number")
+  colNumber  Int      @map("col_number")
+  
+  // Relations
+  room       Room     @relation(fields: [roomId], references: [id])
+  allocations SeatingAllocation[]
+  
+  @@unique([roomId, rowNumber, colNumber])
+}
+
+// Seating allocation for exams
+model SeatingAllocation {
+  id        String    @id @default(uuid())
+  examId    String    @map("exam_id")
+  studentId String    @map("student_id")
+  seatId    String    @map("seat_id")
+  allocatedAt DateTime @default(now())
+  
+  // Relations
+  exam      Exam      @relation(fields: [examId], references: [id])
+  student   User      @relation(fields: [studentId], references: [id])
+  seat      Seat      @relation(fields: [seatId], references: [id])
+  
+  @@unique([examId, studentId])
+  @@unique([examId, seatId])
+}
+
+// SOS Alert model for emergency situations
+model SosAlert {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  location    String?
+  message     String?
+  status      String    @default("ACTIVE") // ACTIVE, RESOLVED, DISMISSED
+  priority    String    @default("HIGH") // LOW, MEDIUM, HIGH, CRITICAL
+  resolvedAt  DateTime?
+  resolvedBy  String?   @map("resolved_by")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation("UserSosAlerts", fields: [userId], references: [id])
+  resolver    User?     @relation("ResolvedSosAlerts", fields: [resolvedBy], references: [id])
+}
+
+// QR Scan model for hall ticket verification
+model QrScan {
+  id              String          @id @default(uuid())
+  hallTicketId    String          @map("hall_ticket_id")
+  hallTicketQrId  String?         @map("hall_ticket_qr_id")
+  scannedBy       String          @map("scanned_by")
+  scannedAt       DateTime        @default(now())
+  location        String?
+  deviceInfo      String?         @map("device_info")
+  isValid         Boolean         @default(true)
+  validationError String?         @map("validation_error")
+  
+  // Relations
+  hallTicket      HallTicket      @relation(fields: [hallTicketId], references: [id])
+  hallTicketQr    HallTicketQr?   @relation(fields: [hallTicketQrId], references: [id])
+  scanner         User            @relation("QrScans", fields: [scannedBy], references: [id])
+}
+
+// Fraud Attempt model for security monitoring
+model FraudAttempt {
+  id          String    @id @default(uuid())
+  type        String    // QR_DUPLICATE, INVALID_TICKET, LOCATION_MISMATCH, etc.
+  description String
+  userId      String?   @map("user_id")
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  detectedAt  DateTime  @default(now())
+  severity    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status      String    @default("PENDING") // PENDING, INVESTIGATED, RESOLVED
+  
+  // Relations
+  user        User?     @relation("FraudAttempts", fields: [userId], references: [id])
+}
+
+// System Alert model for admin notifications
+model SystemAlert {
+  id          String    @id @default(uuid())
+  type        String    // SYSTEM, SECURITY, ACADEMIC, EMERGENCY
+  title       String
+  message     String
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status      String    @default("ACTIVE") // ACTIVE, ACKNOWLEDGED, RESOLVED
+  targetRoles String[]  // Array of roles that should see this alert
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  creator     User?     @relation("CreatedAlerts", fields: [createdBy], references: [id])
+}
+
+// Notification model for user notifications
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  type        String    // EMAIL, SMS, PUSH, IN_APP
+  title       String
+  message     String
+  status      String    @default("PENDING") // PENDING, SENT, DELIVERED, FAILED
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  user        User      @relation("UserNotifications", fields: [userId], references: [id])
+}
+
+// AI Decision model for tracking AI system decisions
+model AiDecision {
+  id            String    @id @default(uuid())
+  module        String    // AI_AVATAR, STUDY_AI, CLUB_AI, ANALYTICS_AI
+  decisionType  String    // RECOMMENDATION, PREDICTION, CLASSIFICATION, etc.
+  input         String    // JSON string of input data
+  output        String    // JSON string of output/decision
+  confidence    Float     // 0.0 to 1.0
+  userId        String?   @map("user_id")
+  contextId     String?   @map("context_id") // Related entity ID
+  isOverridden  Boolean   @default(false)
+  overriddenBy  String?   @map("overridden_by")
+  overriddenAt  DateTime?
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user          User?     @relation("AiDecisions", fields: [userId], references: [id])
+  overrider     User?     @relation("OverriddenAiDecisions", fields: [overriddenBy], references: [id])
+}
+
+// Attendance model for tracking student attendance
+model Attendance {
+  id          String    @id @default(uuid())
+  studentId   String    @map("student_id")
+  courseId    String    @map("course_id")
+  date        DateTime
+  status      String    // PRESENT, ABSENT, LATE, EXCUSED
+  markedBy    String?   @map("marked_by")
+  markedAt    DateTime  @default(now())
+  notes       String?
+  
+  // Relations
+  student     User      @relation("StudentAttendance", fields: [studentId], references: [id])
+  course      Course    @relation("CourseAttendance", fields: [courseId], references: [id])
+  marker      User?     @relation("MarkedAttendance", fields: [markedBy], references: [id])
+  
+  @@unique([studentId, courseId, date])
+}
+
+// Budget model for club and event budget tracking
+model Budget {
+  id          String    @id @default(uuid())
+  clubId      String?   @map("club_id")
+  eventId     String?   @map("event_id")
+  category    String    // CLUB_ANNUAL, EVENT_SPECIFIC, EMERGENCY, etc.
+  allocated   Decimal   @db.Decimal(10, 2)
+  spent       Decimal   @default(0) @db.Decimal(10, 2)
+  remaining   Decimal   @default(0) @db.Decimal(10, 2)
+  fiscalYear  String    @map("fiscal_year")
+  status      String    @default("ACTIVE") // ACTIVE, EXHAUSTED, FROZEN
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  club        Club?     @relation("ClubBudgets", fields: [clubId], references: [id])
+  event       Event?    @relation("EventBudgets", fields: [eventId], references: [id])
+  expenses    BudgetExpense[]
+}
+
+// Budget Expense model for tracking individual expenses
+model BudgetExpense {
+  id          String    @id @default(uuid())
+  budgetId    String    @map("budget_id")
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  category    String    // VENUE, FOOD, EQUIPMENT, MARKETING, etc.
+  approvedBy  String?   @map("approved_by")
+  approvedAt  DateTime?
+  receiptUrl  String?   @map("receipt_url")
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  budget      Budget    @relation(fields: [budgetId], references: [id])
+  approver    User?     @relation("ApprovedExpenses", fields: [approvedBy], references: [id])
+}
+
+// System Configuration model for feature toggles and settings
+model SystemConfig {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  value       String    // JSON string for complex values
+  type        String    // BOOLEAN, STRING, NUMBER, JSON
+  category    String    // FEATURE_TOGGLE, SYSTEM_SETTING, AI_CONFIG, etc.
+  description String?
+  updatedBy   String?   @map("updated_by")
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  updater     User?     @relation("ConfigUpdates", fields: [updatedBy], references: [id])
+}
+
+// Bulk Upload Jobs for tracking large CSV processing
+model BulkUploadJob {
+  id              String    @id @default(uuid())
+  filename        String
+  totalRows       Int       @map("total_rows")
+  processedRows   Int       @default(0) @map("processed_rows")
+  successRows     Int       @default(0) @map("success_rows")
+  failedRows      Int       @default(0) @map("failed_rows")
+  status          String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED
+  examSession     String    @map("exam_session")
+  uploadedBy      String    @map("uploaded_by")
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  errorSummary    String?   @map("error_summary")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Hall ticket specific fields
+  uploadType      String    @default("CSV") @map("upload_type") // CSV, HALL_TICKET_FILES
+  branch          String?   // Branch/department for hall ticket uploads
+  examId          String?   @map("exam_id") // Associated exam for hall tickets
+  deliveredCount  Int       @default(0) @map("delivered_count")
+  failedCount     Int       @default(0) @map("failed_count")
+  
+  // Relations
+  uploader        User            @relation("BulkUploadJobs", fields: [uploadedBy], references: [id])
+  hallTickets     HallTicket[]
+  logs            BulkUploadLog[]
+  exam            Exam?           @relation(fields: [examId], references: [id])
+}
+
+// Bulk Upload Logs for detailed tracking
+model BulkUploadLog {
+  id              String        @id @default(uuid())
+  bulkUploadJobId String        @map("bulk_upload_job_id")
+  rowNumber       Int           @map("row_number")
+  studentId       String?       @map("student_id")
+  examId          String?       @map("exam_id")
+  status          String        // SUCCESS, FAILED, SKIPPED
+  errorMessage    String?       @map("error_message")
+  processingData  String?       @map("processing_data") // JSON string
+  createdAt       DateTime      @default(now())
+  
+  // Relations
+  bulkUploadJob   BulkUploadJob @relation(fields: [bulkUploadJobId], references: [id], onDelete: Cascade)
+}
+
+// Hall Ticket QR Codes with advanced security
+model HallTicketQr {
+  id              String      @id @default(uuid())
+  hallTicketId    String      @map("hall_ticket_id")
+  qrToken         String      @unique @map("qr_token")
+  qrData          String      @map("qr_data") // JSON encoded data
+  signature       String      // Security signature
+  isUsed          Boolean     @default(false) @map("is_used")
+  usedAt          DateTime?   @map("used_at")
+  scanCount       Int         @default(0) @map("scan_count")
+  lastScannedAt   DateTime?   @map("last_scanned_at")
+  expiresAt       DateTime    @map("expires_at")
+  createdAt       DateTime    @default(now())
+  
+  // Relations
+  hallTicket      HallTicket  @relation(fields: [hallTicketId], references: [id], onDelete: Cascade)
+  qrScans         QrScan[]
+}
+
+// Exam Seating for organized seat management
+model ExamSeating {
+  id          String    @id @default(uuid())
+  examId      String    @map("exam_id")
+  hallName    String    @map("hall_name")
+  seatNumber  String    @map("seat_number")
+  studentId   String?   @map("student_id")
+  isReserved  Boolean   @default(false) @map("is_reserved")
+  gate        String?
+  block       String?
+  rowNumber   Int?      @map("row_number")
+  colNumber   Int?      @map("col_number")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  exam        Exam      @relation(fields: [examId], references: [id])
+  student     User?     @relation("ExamSeating", fields: [studentId], references: [id])
+  
+  @@unique([examId, hallName, seatNumber])
+}
+
+// Student model for performance tracking
+model Student {
+  id          String    @id
+  school      String    // 'GP' or 'MS'
+  sex         String    // 'F' or 'M'
+  age         Int       // 15-22
+  address     String    // 'U' or 'R'
+  famsize     String    // 'LE3' or 'GT3'
+  Pstatus     String    // 'T' or 'A'
+  Medu        Int       // 0-4
+  Fedu        Int       // 0-4
+  Mjob        String    // 'teacher', 'health', 'services', 'at_home', 'other'
+  Fjob        String    // 'teacher', 'health', 'services', 'at_home', 'other'
+  reason      String    // 'home', 'reputation', 'course', 'other'
+  guardian    String    // 'mother', 'father', 'other'
+  traveltime  Int       // 1-4
+  studytime   Int       // 1-4
+  failures    Int       // 0-4
+  schoolsup   Boolean   
+  famsup      Boolean
+  paid        Boolean
+  activities  Boolean
+  nursery     Boolean
+  higher      Boolean
+  internet    Boolean
+  romantic    Boolean
+  famrel      Int       // 1-5
+  freetime    Int       // 1-5
+  goout       Int       // 1-5
+  Dalc        Int       // 1-5
+  Walc        Int       // 1-5
+  health      Int       // 1-5
+  absences    Int       // 0-93
+  
+  // Relations
+  grades      Grade[]
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Grade model for student performance
+model Grade {
+  id        String   @id @default(uuid())
+  studentId String   @map("student_id")
+  subject   String   // 'MATH' or 'PORTUGUESE'
+  G1        Int      // First period grade (0-20)
+  G2        Int      // Second period grade (0-20)
+  G3        Int      // Final grade (0-20)
+  
+  // Relations
+  student   Student  @relation(fields: [studentId], references: [id])
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Composite unique constraint
+  @@unique([studentId, subject])
+}
+
+// Certificate Vault Models
+model Certificate {
+  id                String              @id @default(uuid())
+  studentId         String              @map("student_id")
+  title             String
+  organization      String?
+  issueDate         DateTime?           @map("issue_date")
+  expiryDate        DateTime?           @map("expiry_date")
+  certificateType   String              @map("certificate_type") // COURSE, INTERNSHIP, HACKATHON, WORKSHOP, EXAM, ACHIEVEMENT
+  category          String              @default("ACADEMIC") // ACADEMIC, TECHNICAL, CO_CURRICULAR
+  fileUrl           String              @map("file_url")
+  fileName          String              @map("file_name")
+  fileType          String              @map("file_type") // PDF, JPG, PNG
+  fileSize          Int                 @map("file_size")
+  fileHash          String              @map("file_hash") // For duplicate detection
+  isImportant       Boolean             @default(false) @map("is_important")
+  isResumeVisible   Boolean             @default(false) @map("is_resume_visible")
+  isPortfolioVisible Boolean            @default(true) @map("is_portfolio_visible")
+  isVerified        Boolean             @default(false) @map("is_verified")
+  verifiedBy        String?             @map("verified_by")
+  verifiedAt        DateTime?           @map("verified_at")
+  shareToken        String?             @unique @map("share_token")
+  folderId          String?             @map("folder_id")
+  metadata          String?             // JSON string for extracted metadata
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  
+  // Relations
+  student           User                @relation("StudentCertificates", fields: [studentId], references: [id], onDelete: Cascade)
+  verifier          User?               @relation("VerifiedCertificates", fields: [verifiedBy], references: [id])
+  folder            CertificateFolder?  @relation(fields: [folderId], references: [id])
+  tags              CertificateTag[]
+  attachments       CertificateAttachment[]
+  
+  @@index([studentId])
+  @@index([fileHash])
+  @@index([certificateType])
+  @@index([category])
+}
+
+model CertificateFolder {
+  id          String        @id @default(uuid())
+  studentId   String        @map("student_id")
+  name        String
+  description String?
+  color       String?       @default("#3B82F6") // Hex color for UI
+  orderIndex  Int           @default(0) @map("order_index")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  
+  // Relations
+  student     User          @relation("StudentCertificateFolders", fields: [studentId], references: [id], onDelete: Cascade)
+  certificates Certificate[]
+  
+  @@unique([studentId, name])
+  @@index([studentId])
+}
+
+model CertificateTag {
+  id            String      @id @default(uuid())
+  certificateId String      @map("certificate_id")
+  tag           String
+  tagType       String      @default("SKILL") @map("tag_type") // SKILL, YEAR, ORGANIZATION, CUSTOM
+  
+  // Relations
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  
+  @@unique([certificateId, tag])
+  @@index([tag])
+  @@index([tagType])
+}
+
+model CertificateAttachment {
+  id            String      @id @default(uuid())
+  certificateId String      @map("certificate_id")
+  attachmentType String     @map("attachment_type") // PROJECT, EVENT, ACHIEVEMENT
+  attachmentId  String      @map("attachment_id") // ID of the attached entity
+  attachedAt    DateTime    @default(now()) @map("attached_at")
+  
+  // Relations
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  
+  @@unique([certificateId, attachmentType, attachmentId])
+  @@index([attachmentType, attachmentId])
+}
+
+// Classroom Chat Models
+model ChatMessage {
+  id            String            @id @default(uuid())
+  classroomId   String            @map("classroom_id")
+  senderId      String            @map("sender_id")
+  content       String
+  messageType   String            @default("text") @map("message_type") // text, file, image, video, audio
+  replyToId     String?           @map("reply_to_id")
+  isEdited      Boolean           @default(false) @map("is_edited")
+  editedAt      DateTime?         @map("edited_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  
+  // Relations
+  sender        User              @relation("ChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo       ChatMessage?      @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies       ChatMessage[]     @relation("MessageReplies")
+  attachments   ChatAttachment[]
+  reactions     ChatReaction[]
+  
+  @@index([classroomId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model ChatAttachment {
+  id          String      @id @default(uuid())
+  messageId   String      @map("message_id")
+  fileName    String      @map("file_name")
+  fileUrl     String      @map("file_url")
+  fileType    String      @map("file_type")
+  fileSize    Int         @map("file_size")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  
+  // Relations
+  message     ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@index([messageId])
+}
+
+model ChatReaction {
+  id          String      @id @default(uuid())
+  messageId   String      @map("message_id")
+  userId      String      @map("user_id")
+  emoji       String
+  createdAt   DateTime    @default(now()) @map("created_at")
+  
+  // Relations
+  message     ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User        @relation("ChatReactions", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+}

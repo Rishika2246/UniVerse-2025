@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniVerse Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .header { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header h1 { color: #667eea; margin-bottom: 10px; }
+        .header p { color: #666; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .quick-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin: 20px 0; 
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 15px; 
+            padding: 25px; 
+            text-align: center; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .stat-label { color: #666; font-size: 0.9em; }
+        .stat-trend { font-size: 0.8em; margin-top: 5px; }
+        .trend-positive { color: #4CAF50; }
+        .trend-warning { color: #FF9800; }
+        
+        .main-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin: 20px 0; 
+        }
+        .full-width { grid-column: 1 / -1; }
+        
+        .card { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 15px; 
+            padding: 25px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .card h3 { 
+            color: #667eea; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #667eea; 
+            padding-bottom: 10px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .status-item { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 10px; 
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        .status-value { font-size: 1.5em; font-weight: bold; color: #667eea; }
+        .status-label { font-size: 0.9em; color: #666; margin-top: 5px; }
+        
+        .progress-bar { 
+            background: #e0e0e0; 
+            border-radius: 10px; 
+            height: 8px; 
+            margin: 10px 0; 
+            overflow: hidden;
+        }
+        .progress-fill { 
+            height: 100%; 
+            border-radius: 10px; 
+            transition: width 0.3s ease;
+        }
+        .progress-good { background: #4CAF50; }
+        .progress-warning { background: #FF9800; }
+        .progress-critical { background: #F44336; }
+        
+        .activity-feed { max-height: 400px; overflow-y: auto; }
+        .activity-item { 
+            padding: 15px; 
+            margin: 10px 0; 
+            background: #f8f9fa; 
+            border-radius: 10px; 
+            border-left: 4px solid #667eea;
+            transition: background 0.3s ease;
+        }
+        .activity-item:hover { background: #e3f2fd; }
+        .activity-type { 
+            font-size: 0.8em; 
+            color: #666; 
+            text-transform: uppercase; 
+            margin-bottom: 5px;
+        }
+        .activity-message { margin-bottom: 5px; }
+        .activity-time { font-size: 0.8em; color: #999; }
+        
+        .alert { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border-left: 4px solid;
+        }
+        .alert-error { background: #ffebee; border-color: #f44336; color: #c62828; }
+        .alert-warning { background: #fff3e0; border-color: #ff9800; color: #ef6c00; }
+        .alert-info { background: #e3f2fd; border-color: #2196f3; color: #1565c0; }
+        .alert-success { background: #e8f5e8; border-color: #4caf50; color: #2e7d32; }
+        
+        .refresh-btn { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 1em;
+            transition: transform 0.3s ease;
+        }
+        .refresh-btn:hover { transform: scale(1.05); }
+        
+        .loading { 
+            display: inline-block; 
+            width: 20px; 
+            height: 20px; 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid #667eea; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .role-breakdown { display: flex; gap: 10px; flex-wrap: wrap; }
+        .role-chip { 
+            background: #667eea; 
+            color: white; 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 UniVerse Admin Dashboard</h1>
+        <p>Comprehensive Academic Management System Control Center</p>
+        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+            <button class="refresh-btn" onclick="window.open('/admin/advanced', '_blank')" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">🧠 Advanced Admin</button>
+            <button class="refresh-btn" onclick="window.open('http://localhost:5556', '_blank')">🗄️ View Data (Prisma Studio)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="quick-stats" id="quickStats">
+            <div class="loading"></div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="main-grid">
+            <!-- Users by Role -->
+            <div class="card">
+                <h3>👥 Users by Role</h3>
+                <div id="usersByRole">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="card">
+                <h3>🏥 System Health</h3>
+                <div id="systemHealth">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Active Exams -->
+            <div class="card">
+                <h3>📝 Active Exams</h3>
+                <div id="examStatus">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Seating Allocation Status -->
+            <div class="card">
+                <h3>🪑 Seating Allocation Status</h3>
+                <div id="seatingStatus">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Hall Ticket Generation Status -->
+            <div class="card">
+                <h3>🎫 Hall Ticket Generation Status</h3>
+                <div id="hallTicketStatus">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Mind Maps Generated -->
+            <div class="card">
+                <h3>🧠 Mind Maps Generated</h3>
+                <div id="mindMapStatus">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Club Events Running -->
+            <div class="card">
+                <h3>🎭 Club Events Running</h3>
+                <div id="eventStatus">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- Notifications Queued -->
+            <div class="card">
+                <h3>🔔 Notifications Queued</h3>
+                <div id="notificationQueue">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- SOS Alerts -->
+            <div class="card full-width">
+                <h3>🚨 SOS Alerts</h3>
+                <div id="sosAlerts">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <h3>📈 Recent Activity</h3>
+            <div class="activity-feed" id="recentActivity">
+                <div class="loading"></div>
+            </div>
+        </div>
+
+        <!-- System Alerts -->
+        <div class="card">
+            <h3>⚠️ System Alerts & Notifications</h3>
+            <div id="systemAlerts">
+                <div class="loading"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/admin-dashboard');
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    throw new Error(data.message);
+                }
+                
+                updateQuickStats(data.quickStats);
+                updateUsersByRole(data.usersByRole);
+                updateSystemHealth(data.systemOverview);
+                updateExamStatus(data.examStatus);
+                updateSeatingStatus(data.seatingStatus);
+                updateHallTicketStatus(data.hallTicketStatus);
+                updateMindMapStatus(data.mindMapStatus);
+                updateEventStatus(data.eventStatus);
+                updateNotificationQueue(data.notificationQueue);
+                updateSOSAlerts(data.sosAlerts);
+                updateRecentActivity(data.recentActivities);
+                updateSystemAlerts(data.alerts, data.notifications);
+                
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                showError('Failed to load dashboard data: ' + error.message);
+            }
+        }
+        
+        function updateQuickStats(stats) {
+            const html = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon">${stat.icon}</div>
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                    <div class="stat-trend ${stat.trend.includes('+') ? 'trend-positive' : 'trend-warning'}">${stat.trend}</div>
+                </div>
+            `).join('');
+            document.getElementById('quickStats').innerHTML = html;
+        }
+        
+        function updateUsersByRole(users) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${users.total}</div>
+                        <div class="status-label">Total Users</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${users.students}</div>
+                        <div class="status-label">Students</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${users.faculty}</div>
+                        <div class="status-label">Faculty</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${users.admins}</div>
+                        <div class="status-label">Admins</div>
+                    </div>
+                </div>
+                <div class="role-breakdown">
+                    ${users.breakdown.map(role => `
+                        <div class="role-chip">${role.role}: ${role.count} (${role.percentage}%)</div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('usersByRole').innerHTML = html;
+        }
+        
+        function updateSystemHealth(health) {
+            const statusColor = health.health === 'healthy' ? '#4CAF50' : '#FF9800';
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" style="color: ${statusColor}">${health.health}</div>
+                        <div class="status-label">System Status</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${health.uptime}</div>
+                        <div class="status-label">Uptime</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${health.totalRequests}</div>
+                        <div class="status-label">Total Requests</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${health.errors}</div>
+                        <div class="status-label">Errors</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('systemHealth').innerHTML = html;
+        }
+        
+        function updateExamStatus(exams) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${exams.total}</div>
+                        <div class="status-label">Total Exams</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${exams.upcoming}</div>
+                        <div class="status-label">Upcoming</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${exams.completed}</div>
+                        <div class="status-label">Completed</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${exams.courses}</div>
+                        <div class="status-label">Courses</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('examStatus').innerHTML = html;
+        }
+        
+        function updateSeatingStatus(seating) {
+            const progressClass = seating.status === 'good' ? 'progress-good' : 
+                                seating.status === 'warning' ? 'progress-warning' : 'progress-critical';
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${seating.totalAllocations}</div>
+                        <div class="status-label">Total Allocations</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${seating.allocationRate}%</div>
+                        <div class="status-label">Allocation Rate</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill ${progressClass}" style="width: ${seating.allocationRate}%"></div>
+                </div>
+                <p>Exams with seating: ${seating.examsWithSeating} | Without seating: ${seating.examsWithoutSeating}</p>
+            `;
+            document.getElementById('seatingStatus').innerHTML = html;
+        }
+        
+        function updateHallTicketStatus(tickets) {
+            const progressClass = tickets.status === 'good' ? 'progress-good' : 
+                                tickets.status === 'warning' ? 'progress-warning' : 'progress-critical';
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${tickets.totalGenerated}</div>
+                        <div class="status-label">Total Generated</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${tickets.generationRate}%</div>
+                        <div class="status-label">Generation Rate</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill ${progressClass}" style="width: ${tickets.generationRate}%"></div>
+                </div>
+                <p>Exams with tickets: ${tickets.examsWithTickets} | Without tickets: ${tickets.examsWithoutTickets}</p>
+            `;
+            document.getElementById('hallTicketStatus').innerHTML = html;
+        }
+        
+        function updateMindMapStatus(mindMaps) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${mindMaps.total}</div>
+                        <div class="status-label">Total Mind Maps</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${mindMaps.public}</div>
+                        <div class="status-label">Public</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${mindMaps.private}</div>
+                        <div class="status-label">Private</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${mindMaps.averagePerStudent}</div>
+                        <div class="status-label">Avg per Student</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mindMapStatus').innerHTML = html;
+        }
+        
+        function updateEventStatus(events) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${events.totalClubs}</div>
+                        <div class="status-label">Total Clubs</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${events.totalEvents}</div>
+                        <div class="status-label">Total Events</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${events.upcomingEvents}</div>
+                        <div class="status-label">Upcoming</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${events.pendingApproval}</div>
+                        <div class="status-label">Pending Approval</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: ${events.approvalRate}%"></div>
+                </div>
+                <p>Approval Rate: ${events.approvalRate}%</p>
+            `;
+            document.getElementById('eventStatus').innerHTML = html;
+        }
+        
+        function updateNotificationQueue(notifications) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value">${notifications.pending}</div>
+                        <div class="status-label">Pending</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${notifications.sent}</div>
+                        <div class="status-label">Sent</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${notifications.failed}</div>
+                        <div class="status-label">Failed</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('notificationQueue').innerHTML = html;
+        }
+        
+        function updateSOSAlerts(sos) {
+            const html = `
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" style="color: ${sos.active > 0 ? '#F44336' : '#4CAF50'}">${sos.active}</div>
+                        <div class="status-label">Active Alerts</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${sos.resolved}</div>
+                        <div class="status-label">Resolved</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${sos.total}</div>
+                        <div class="status-label">Total</div>
+                    </div>
+                </div>
+                ${sos.active === 0 ? '<p style="color: #4CAF50; text-align: center; margin-top: 15px;">✅ No active SOS alerts - system secure</p>' : 
+                  '<p style="color: #F44336; text-align: center; margin-top: 15px;">🚨 Active SOS alerts require immediate attention!</p>'}
+            `;
+            document.getElementById('sosAlerts').innerHTML = html;
+        }
+        
+        function updateRecentActivity(activities) {
+            const allActivities = [
+                ...activities.userUpdates,
+                ...activities.seatingAllocations,
+                ...activities.hallTickets
+            ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 20);
+            
+            const html = allActivities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-type">${activity.type.replace('_', ' ')}</div>
+                    <div class="activity-message">${activity.message}</div>
+                    <div class="activity-time">${new Date(activity.timestamp).toLocaleString()}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentActivity').innerHTML = html || '<p>No recent activity</p>';
+        }
+        
+        function updateSystemAlerts(alerts, notifications) {
+            const allAlerts = [...alerts, ...notifications];
+            const html = allAlerts.length > 0 ? allAlerts.map(alert => `
+                <div class="alert alert-${alert.type}">
+                    <strong>${alert.title || alert.type.toUpperCase()}</strong><br>
+                    ${alert.message}
+                    <div style="font-size: 0.8em; margin-top: 5px; opacity: 0.8;">
+                        ${new Date(alert.timestamp).toLocaleString()}
+                    </div>
+                </div>
+            `).join('') : '<div class="alert alert-success">✅ All systems operational - no alerts</div>';
+            
+            document.getElementById('systemAlerts').innerHTML = html;
+        }
+        
+        function showError(message) {
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 50px; color: #F44336;">
+                    <h2>⚠️ Dashboard Error</h2>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🔄 Retry
+                    </button>
+                </div>
+            `;
+        }
+        
+        function refreshDashboard() {
+            // Show loading state
+            document.querySelectorAll('.card > div').forEach(div => {
+                if (div.id) div.innerHTML = '<div class="loading"></div>';
+            });
+            fetchDashboardData();
+        }
+        
+        // Initial load
+        fetchDashboardData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(fetchDashboardData, 30000);
+    </script>
+</body>
+</html>

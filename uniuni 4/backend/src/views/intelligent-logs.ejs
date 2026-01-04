@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Logs & Security Audit - UniVerse</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header h1 { color: #667eea; margin-bottom: 10px; }
+        .header p { color: #666; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .tabs { 
+            display: flex; 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .tab { 
+            flex: 1; 
+            padding: 15px 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+        }
+        .tab.active { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .tab:hover:not(.active) { background: rgba(102, 126, 234, 0.1); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 10px; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .stat-value { font-size: 2em; font-weight: bold; color: #667eea; }
+        .stat-label { color: #666; margin-top: 5px; }
+        
+        .log-container { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 15px; 
+            padding: 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .log-item { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        .log-item:hover { transform: translateX(5px); }
+        
+        .log-intelligent { 
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); 
+            border-color: #4caf50; 
+        }
+        .log-warning { 
+            background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%); 
+            border-color: #ff9800; 
+        }
+        .log-error { 
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); 
+            border-color: #f44336; 
+        }
+        .log-security { 
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); 
+            border-color: #2196f3; 
+        }
+        
+        .log-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 8px; 
+        }
+        .log-category { 
+            background: #667eea; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8em; 
+        }
+        .log-time { color: #666; font-size: 0.9em; }
+        .log-message { font-weight: 500; margin-bottom: 5px; }
+        .log-details { font-size: 0.9em; color: #666; }
+        
+        .controls { 
+            display: flex; 
+            gap: 10px; 
+            margin: 20px 0; 
+            flex-wrap: wrap;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .btn-primary:hover { transform: scale(1.05); }
+        .btn-secondary { 
+            background: rgba(255,255,255,0.9); 
+            color: #333; 
+            border: 1px solid #ddd;
+        }
+        .btn-secondary:hover { background: #f5f5f5; }
+        
+        .filter-group { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+        }
+        .filter-group select { 
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            background: white;
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 40px; 
+            color: #666; 
+        }
+        .spinner { 
+            display: inline-block; 
+            width: 30px; 
+            height: 30px; 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid #667eea; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .severity-high { border-color: #f44336 !important; }
+        .severity-medium { border-color: #ff9800 !important; }
+        .severity-low { border-color: #4caf50 !important; }
+        
+        .demo-section { 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .demo-buttons { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 Intelligent Logs & Security Audit</h1>
+        <p>Real-time Decision Making, Security Events, and System Intelligence</p>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Overview -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading statistics...
+            </div>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-section">
+            <h3>🎮 Simulate Intelligent Operations</h3>
+            <p>Generate intelligent logs to see the system's decision-making in action</p>
+            <div class="demo-buttons">
+                <button class="btn btn-primary" onclick="simulateOperation('seating')">🪑 Seating Decision</button>
+                <button class="btn btn-primary" onclick="simulateOperation('hallticket')">🎫 Hall Ticket Block</button>
+                <button class="btn btn-primary" onclick="simulateOperation('mindmap')">🧠 Mind Map Generation</button>
+                <button class="btn btn-primary" onclick="simulateOperation('conflict')">🎭 Event Conflict</button>
+                <button class="btn btn-primary" onclick="simulateOperation('failure')">⚠️ System Failure</button>
+                <button class="btn btn-primary" onclick="simulateOperation('security')">🔒 Security Event</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('intelligent')">🧠 Intelligent Decisions</button>
+            <button class="tab" onclick="switchTab('security')">🔒 Security Events</button>
+            <button class="tab" onclick="switchTab('audit')">📋 Audit Logs</button>
+            <button class="tab" onclick="switchTab('all')">📊 All Logs</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" onclick="refreshLogs()">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="clearLogs()">🗑️ Clear</button>
+            
+            <div class="filter-group">
+                <label>Category:</label>
+                <select id="categoryFilter" onchange="applyFilters()">
+                    <option value="">All Categories</option>
+                    <option value="SEATING_ENGINE">Seating Engine</option>
+                    <option value="HALL_TICKET_ENGINE">Hall Ticket Engine</option>
+                    <option value="MINDMAP_ENGINE">Mind Map Engine</option>
+                    <option value="EVENT_ENGINE">Event Engine</option>
+                    <option value="SYSTEM_FAILURE">System Failure</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Level:</label>
+                <select id="levelFilter" onchange="applyFilters()">
+                    <option value="">All Levels</option>
+                    <option value="INFO">Info</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="ERROR">Error</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div id="intelligent" class="tab-content active">
+            <div class="log-container" id="intelligentLogs">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading intelligent logs...
+                </div>
+            </div>
+        </div>
+
+        <div id="security" class="tab-content">
+            <div class="log-container" id="securityLogs">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading security events...
+                </div>
+            </div>
+        </div>
+
+        <div id="audit" class="tab-content">
+            <div class="log-container" id="auditLogs">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading audit logs...
+                </div>
+            </div>
+        </div>
+
+        <div id="all" class="tab-content">
+            <div class="log-container" id="allLogs">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading all logs...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'intelligent';
+        
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            currentTab = tabName;
+            loadTabData(tabName);
+        }
+        
+        // Load data for specific tab
+        async function loadTabData(tabName) {
+            try {
+                let endpoint;
+                switch (tabName) {
+                    case 'intelligent':
+                        endpoint = '/intelligent-logs/api/intelligent';
+                        break;
+                    case 'security':
+                        endpoint = '/intelligent-logs/api/security';
+                        break;
+                    case 'audit':
+                        endpoint = '/intelligent-logs/api/audit';
+                        break;
+                    case 'all':
+                        endpoint = '/intelligent-logs/api/logs';
+                        break;
+                }
+                
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                displayLogs(data, tabName);
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById(`${tabName}Logs`).innerHTML = '<p>Error loading logs</p>';
+            }
+        }
+        
+        // Display logs
+        function displayLogs(data, tabName) {
+            const container = document.getElementById(`${tabName}Logs`);
+            const logs = data.logs || data.events || [];
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<p>No logs available</p>';
+                return;
+            }
+            
+            const html = logs.map(log => {
+                const logClass = getLogClass(log, tabName);
+                const time = new Date(log.timestamp).toLocaleString();
+                
+                return `
+                    <div class="log-item ${logClass}">
+                        <div class="log-header">
+                            <span class="log-category">${log.category || log.type || log.action}</span>
+                            <span class="log-time">${time}</span>
+                        </div>
+                        <div class="log-message">${log.message}</div>
+                        ${log.details ? `<div class="log-details">Details: ${JSON.stringify(log.details)}</div>` : ''}
+                        ${log.error ? `<div class="log-details">Error: ${log.error}</div>` : ''}
+                        ${log.severity ? `<div class="log-details">Severity: ${log.severity}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Get log CSS class
+        function getLogClass(log, tabName) {
+            if (tabName === 'security') {
+                return `log-security severity-${log.severity?.toLowerCase() || 'medium'}`;
+            }
+            
+            if (log.intelligence) return 'log-intelligent';
+            if (log.level === 'WARNING') return 'log-warning';
+            if (log.level === 'ERROR') return 'log-error';
+            return 'log-intelligent';
+        }
+        
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/intelligent-logs/api/stats');
+                const stats = await response.json();
+                
+                const html = `
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.totalLogs}</div>
+                        <div class="stat-label">Total Logs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.intelligentLogs}</div>
+                        <div class="stat-label">Intelligent Decisions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.securityEvents}</div>
+                        <div class="stat-label">Security Events</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.auditLogs}</div>
+                        <div class="stat-label">Audit Logs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Object.keys(stats.logsByCategory).length}</div>
+                        <div class="stat-label">Active Components</div>
+                    </div>
+                `;
+                
+                document.getElementById('statsGrid').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+        
+        // Simulate operations
+        async function simulateOperation(operation) {
+            try {
+                const response = await fetch(`/intelligent-logs/api/simulate/${operation}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Refresh current tab after a short delay
+                    setTimeout(() => {
+                        loadTabData(currentTab);
+                        loadStatistics();
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error simulating operation:', error);
+            }
+        }
+        
+        // Refresh logs
+        function refreshLogs() {
+            loadTabData(currentTab);
+            loadStatistics();
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            // This would implement filtering logic
+            loadTabData(currentTab);
+        }
+        
+        // Clear logs (placeholder)
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all logs?')) {
+                // This would implement log clearing
+                alert('Log clearing would be implemented here');
+            }
+        }
+        
+        // Initial load
+        loadStatistics();
+        loadTabData('intelligent');
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadTabData(currentTab);
+            loadStatistics();
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Exams' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <%- include('partials/nav') %>
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-cyan-200 flex items-center justify-between">
+        <p class="text-cyan-700 text-xl font-semibold">Exams</p>
+        <a href="/admin/exams/export.csv" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 text-white">Export CSV</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-cyan-50 text-cyan-700">
+            <tr>
+              <th class="px-6 py-3 text-left">Course</th>
+              <th class="px-6 py-3 text-left">Type</th>
+              <th class="px-6 py-3 text-left">Date</th>
+              <th class="px-6 py-3 text-left">Start</th>
+              <th class="px-6 py-3 text-left">End</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-cyan-100 text-gray-700">
+            <% for (const e of exams) { %>
+              <tr>
+                <td class="px-6 py-3"><%= e.course ? (e.course.code + ' ' + e.course.name) : '' %></td>
+                <td class="px-6 py-3"><%= e.examType %></td>
+                <td class="px-6 py-3"><%= new Date(e.examDate).toLocaleDateString() %></td>
+                <td class="px-6 py-3"><%= new Date(e.startTime).toLocaleTimeString() %></td>
+                <td class="px-6 py-3"><%= new Date(e.endTime).toLocaleTimeString() %></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

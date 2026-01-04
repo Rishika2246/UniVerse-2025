@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniVerse - System Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #1a2332;
+            overflow-x: auto;
+        }
+
+        .container {
+            min-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            color: #1a2332;
+            margin-bottom: 3px;
+        }
+
+        .header p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .architecture-flow {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .node {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid;
+            position: relative;
+            min-width: 120px;
+            transition: all 0.2s ease;
+        }
+
+        .node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .node-large {
+            min-width: 160px;
+            padding: 12px 18px;
+            font-size: 12px;
+        }
+
+        .node-small {
+            min-width: 100px;
+            padding: 7px 12px;
+            font-size: 9px;
+        }
+
+        /* Color schemes */
+        .node-entry {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .node-auth {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .node-core {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1e3a8a;
+        }
+
+        .node-service {
+            background: #e0e7ff;
+            border-color: #6366f1;
+            color: #3730a3;
+        }
+
+        .node-feature {
+            background: #fce7f3;
+            border-color: #ec4899;
+            color: #9f1239;
+        }
+
+        .node-data {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .node-infra {
+            background: #fed7aa;
+            border-color: #f97316;
+            color: #9a3412;
+        }
+
+        .node-ai {
+            background: #e9d5ff;
+            border-color: #a855f7;
+            color: #6b21a8;
+        }
+
+        .node-integration {
+            background: #fecaca;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        /* Connection lines */
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .flow-row > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .branch-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 2px solid;
+            flex-shrink: 0;
+        }
+
+        .connector {
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(to bottom, #cbd5e1, #e2e8f0);
+            margin: 0 auto;
+        }
+
+        .connector-horizontal {
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(to right, #cbd5e1, #e2e8f0);
+        }
+
+        .multi-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .group-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(248, 250, 252, 0.5);
+            margin: 5px 0;
+        }
+
+        .group-box-blue {
+            border-color: #bfdbfe;
+            background: rgba(239, 246, 255, 0.3);
+        }
+
+        .group-box-indigo {
+            border-color: #c7d2fe;
+            background: rgba(224, 231, 255, 0.3);
+        }
+
+        .group-box-purple {
+            border-color: #e9d5ff;
+            background: rgba(243, 232, 255, 0.3);
+        }
+
+        .group-box-green {
+            border-color: #bbf7d0;
+            background: rgba(220, 252, 231, 0.3);
+        }
+
+        .group-box-red {
+            border-color: #fecaca;
+            background: rgba(254, 242, 242, 0.3);
+        }
+
+        .group-box-orange {
+            border-color: #fed7aa;
+            background: rgba(255, 247, 237, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UniVerse System Architecture - Functional Flow Diagram</h1>
+            <p>Complete Technology Stack & Feature Integration</p>
+        </div>
+
+        <div class="architecture-flow">
+            
+            <!-- Entry Point -->
+            <div class="flow-row">
+                <div class="node node-large node-entry">User Interface Layer<br><span style="font-size: 9px; font-weight: 400;">React + TypeScript + Tailwind CSS</span></div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Authentication Gateway -->
+            <div class="flow-row">
+                <div class="node node-large node-auth">Authentication Gateway<br><span style="font-size: 9px; font-weight: 400;">JWT + OAuth2 + Biometric</span></div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Role Based Routing -->
+            <div class="group-box group-box-blue">
+                <div class="section-title">Role-Based Access Control</div>
+                <div class="flow-row">
+                    <div class="node node-core">Student Portal</div>
+                    <div class="node node-core">Faculty Portal</div>
+                    <div class="node node-core">Admin Portal</div>
+                    <div class="node node-core">Club Coordinator</div>
+                    <div class="node node-core">Seating Manager</div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Core Services Hub -->
+            <div class="group-box group-box-indigo">
+                <div class="section-title">Core Services Layer</div>
+                <div class="flow-row">
+                    <div class="node node-large node-service">API Gateway<br><span style="font-size: 9px; font-weight: 400;">REST + GraphQL + WebSocket</span></div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Service Branches -->
+            <div class="group-box group-box-indigo">
+                <div class="flow-row">
+                    <div class="branch-container">
+                        <!-- Academic Services -->
+                        <div class="multi-branch">
+                            <div class="node node-service">Academic Service</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Attendance</div>
+                                <div class="node node-small node-feature">CGPA Calc</div>
+                                <div class="node node-small node-feature">Courses</div>
+                            </div>
+                        </div>
+
+                        <!-- Exam Services -->
+                        <div class="multi-branch">
+                            <div class="node node-service">Exam Service</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Scheduling</div>
+                                <div class="node node-small node-feature">Seating</div>
+                                <div class="node node-small node-feature">Grading</div>
+                            </div>
+                        </div>
+
+                        <!-- Club Services -->
+                        <div class="multi-branch">
+                            <div class="node node-service">Club Service</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Events</div>
+                                <div class="node node-small node-feature">Budget</div>
+                                <div class="node node-small node-feature">Members</div>
+                            </div>
+                        </div>
+
+                        <!-- Gamification -->
+                        <div class="multi-branch">
+                            <div class="node node-service">Gamification</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Points</div>
+                                <div class="node node-small node-feature">Badges</div>
+                                <div class="node node-small node-feature">Leaderboard</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- AI & Advanced Features -->
+            <div class="group-box group-box-purple">
+                <div class="section-title">AI & Advanced Features Layer</div>
+                <div class="flow-row">
+                    <div class="branch-container">
+                        <div class="multi-branch">
+                            <div class="node node-ai">AI Avatar System</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">NLP Engine</div>
+                                <div class="node node-small node-feature">Chat Bot</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-ai">Analytics Engine</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Dashboards</div>
+                                <div class="node node-small node-feature">Reports</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-ai">AR/VR Module</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Campus Map</div>
+                                <div class="node node-small node-feature">3D Halls</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-ai">Recommendation</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div class="node node-small node-feature">ML Models</div>
+                                <div class="node node-small node-feature">Predictions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Data Layer -->
+            <div class="group-box group-box-green">
+                <div class="section-title">Data Management Layer</div>
+                <div class="flow-row">
+                    <div class="branch-container">
+                        <div class="multi-branch">
+                            <div class="node node-data">PostgreSQL</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">User Data</div>
+                                <div class="node node-small node-feature">Academic</div>
+                                <div class="node node-small node-feature">Events</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-data">Redis Cache</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Sessions</div>
+                                <div class="node node-small node-feature">Real-time</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-data">Object Storage</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Images</div>
+                                <div class="node node-small node-feature">Documents</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-data">Search Engine</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Elasticsearch</div>
+                                <div class="node node-small node-feature">Full-text</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Integration Layer -->
+            <div class="group-box group-box-red">
+                <div class="section-title">External Integrations</div>
+                <div class="flow-row">
+                    <div class="branch-container">
+                        <div class="node node-integration">Payment Gateway</div>
+                        <div class="node node-integration">Email Service</div>
+                        <div class="node node-integration">SMS Gateway</div>
+                        <div class="node node-integration">Alumni Network</div>
+                        <div class="node node-integration">Video Streaming</div>
+                        <div class="node node-integration">Push Notifications</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <!-- Infrastructure Layer -->
+            <div class="group-box group-box-orange">
+                <div class="section-title">Infrastructure & DevOps</div>
+                <div class="flow-row">
+                    <div class="branch-container">
+                        <div class="multi-branch">
+                            <div class="node node-infra">Cloud Platform</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">AWS/Azure</div>
+                                <div class="node node-small node-feature">Auto-scale</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-infra">Containerization</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Docker</div>
+                                <div class="node node-small node-feature">Kubernetes</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-infra">Monitoring</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Logs</div>
+                                <div class="node node-small node-feature">Metrics</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-infra">Security</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">Firewall</div>
+                                <div class="node node-small node-feature">Encryption</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-branch">
+                            <div class="node node-infra">CI/CD Pipeline</div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <div class="node node-small node-feature">GitHub</div>
+                                <div class="node node-small node-feature">Jenkins</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #eff6ff; border-color: #3b82f6;"></div>
+                <span>Entry Points</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fef3c7; border-color: #f59e0b;"></div>
+                <span>Authentication</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #dbeafe; border-color: #2563eb;"></div>
+                <span>Core Services</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e0e7ff; border-color: #6366f1;"></div>
+                <span>Service Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fce7f3; border-color: #ec4899;"></div>
+                <span>Features</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #d1fae5; border-color: #10b981;"></div>
+                <span>Data Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fed7aa; border-color: #f97316;"></div>
+                <span>Infrastructure</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e9d5ff; border-color: #a855f7;"></div>
+                <span>AI/Advanced</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fecaca; border-color: #ef4444;"></div>
+                <span>Integrations</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

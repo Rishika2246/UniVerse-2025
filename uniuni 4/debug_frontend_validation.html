@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug CSV Validation</title>
+</head>
+<body>
+    <h1>Debug CSV Validation</h1>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="validateCSV()">Validate CSV</button>
+    <div id="result"></div>
+
+    <script>
+        async function validateCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = 'Please select a CSV file';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('csvFile', fileInput.files[0]);
+            
+            try {
+                console.log('Sending request to validation API...');
+                const response = await fetch('http://localhost:3001/api/hall-tickets/preview-csv', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Validation Successful</h3>
+                        <p>Total Rows: ${result.data.totalRows}</p>
+                        <p>Valid Rows: ${result.data.validRows}</p>
+                        <p>Invalid Rows: ${result.data.invalidRows}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h3>❌ Validation Failed</h3>
+                        <p>Error: ${result.message}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Validation error:', error);
+                resultDiv.innerHTML = `
+                    <h3>❌ Network Error</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

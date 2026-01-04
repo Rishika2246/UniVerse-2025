@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Audit Logs' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <%- include('partials/nav') %>
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-cyan-200">
+        <p class="text-cyan-700 text-xl font-semibold">Audit Logs</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-cyan-50 text-cyan-700">
+            <tr>
+              <th class="px-6 py-3 text-left">Time</th>
+              <th class="px-6 py-3 text-left">Email</th>
+              <th class="px-6 py-3 text-left">Method</th>
+              <th class="px-6 py-3 text-left">Path</th>
+              <th class="px-6 py-3 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-cyan-100 text-gray-700">
+            <% logs.forEach(function(l) { %>
+              <tr>
+                <td class="px-6 py-3"><%= l.at %></td>
+                <td class="px-6 py-3"><%= l.email || '' %></td>
+                <td class="px-6 py-3"><%= l.method %></td>
+                <td class="px-6 py-3"><%= l.path %></td>
+                <td class="px-6 py-3"><%= l.action %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

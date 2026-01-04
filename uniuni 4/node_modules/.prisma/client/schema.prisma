@@ -1,0 +1,256 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// User model for authentication
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  passwordHash  String
+  fullName      String
+  rollNo        String?       @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  roles         UserRole[]
+  hallTickets   HallTicket[]
+  studentCourses StudentCourse[]
+  mindMaps      MindMap[]
+  createdEvents  Event[]       @relation("EventCreator")
+  managedClubs  Club[]         @relation("ClubCoordinator")
+  seatingAllocations SeatingAllocation[]
+}
+
+// Role model for role-based access control
+model Role {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique // STUDENT, ADMIN, SEATING_MANAGER, CLUB_COORDINATOR
+  users     UserRole[]
+  createdAt DateTime  @default(now())
+}
+
+// Join table for User and Role many-to-many relationship
+model UserRole {
+  userId    String   @map("user_id")
+  roleId    Int      @map("role_id")
+  assignedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+// Course model for academic courses
+model Course {
+  id          String         @id @default(uuid())
+  code        String         @unique
+  name        String
+  semester    Int
+  department  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relations
+  syllabus    Syllabus[]
+  exams       Exam[]
+  studentCourses StudentCourse[]
+}
+
+// Syllabus model for course content
+model Syllabus {
+  id          String    @id @default(uuid())
+  courseId    String    @map("course_id")
+  content     String    // Could be JSON string or markdown
+  sourcePdfUrl String?  @map("source_pdf_url")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  course      Course    @relation(fields: [courseId], references: [id])
+  mindMaps    MindMap[]
+}
+
+// Student enrollment in courses
+model StudentCourse {
+  id         String   @id @default(uuid())
+  studentId  String   @map("student_id")
+  courseId   String   @map("course_id")
+  enrolledAt DateTime @default(now())
+  
+  // Relations
+  student    User     @relation(fields: [studentId], references: [id])
+  course     Course   @relation(fields: [courseId], references: [id])
+  
+  @@unique([studentId, courseId])
+}
+
+// Exam model for tests and assessments
+model Exam {
+  id          String    @id @default(uuid())
+  courseId    String    @map("course_id")
+  examType    String    // MID1, MID2, END, etc.
+  examDate    DateTime
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  course      Course    @relation(fields: [courseId], references: [id])
+  hallTickets HallTicket[]
+  seatingAllocations SeatingAllocation[]
+}
+
+// Hall tickets for exams
+model HallTicket {
+  id        String    @id @default(uuid())
+  studentId String    @map("student_id")
+  examId    String    @map("exam_id")
+  issueDate DateTime  @default(now())
+  qrCode    String    @map("qr_code")
+  
+  // Relations
+  student   User      @relation(fields: [studentId], references: [id])
+  exam      Exam      @relation(fields: [examId], references: [id])
+  
+  @@unique([studentId, examId])
+}
+
+// Room for exam seating
+model Room {
+  id       String   @id @default(uuid())
+  name     String   @unique // e.g., A-101
+  capacity Int
+  rows     Int
+  cols     Int
+  
+  // Relations
+  seats    Seat[]
+}
+
+// Seats within rooms
+model Seat {
+  id         String   @id @default(uuid())
+  roomId     String   @map("room_id")
+  rowNumber  Int      @map("row_number")
+  colNumber  Int      @map("col_number")
+  
+  // Relations
+  room       Room     @relation(fields: [roomId], references: [id])
+  allocations SeatingAllocation[]
+  
+  @@unique([roomId, rowNumber, colNumber])
+}
+
+// Seating allocation for exams
+model SeatingAllocation {
+  id        String    @id @default(uuid())
+  examId    String    @map("exam_id")
+  studentId String    @map("student_id")
+  seatId    String    @map("seat_id")
+  allocatedAt DateTime @default(now())
+  
+  // Relations
+  exam      Exam      @relation(fields: [examId], references: [id])
+  student   User      @relation(fields: [studentId], references: [id])
+  seat      Seat      @relation(fields: [seatId], references: [id])
+  
+  @@unique([examId, studentId])
+  @@unique([examId, seatId])
+}
+
+// Mind map model for study support
+model MindMap {
+  id         String       @id @default(uuid())
+  studentId  String       @map("student_id")
+  syllabusId String       @map("syllabus_id")
+  title      String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  
+  student    User         @relation(fields: [studentId], references: [id])
+  syllabus   Syllabus     @relation(fields: [syllabusId], references: [id])
+  nodes      MindMapNode[] @relation("MindMapNodes")
+}
+
+model MindMapNode {
+  id         String       @id @default(uuid())
+  mindmapId  String       @map("mindmap_id")
+  parentId   String?      @map("parent_id")
+  label      String
+  notes      String?
+  orderIndex Int          @default(0)
+  
+  mindmap    MindMap      @relation("MindMapNodes", fields: [mindmapId], references: [id])
+  parent     MindMapNode? @relation("ChildNodes", fields: [parentId], references: [id])
+  children   MindMapNode[] @relation("ChildNodes")
+  resources  StudyResource[]
+}
+
+// Study resources linked to mind map nodes
+model StudyResource {
+  id           String      @id @default(uuid())
+  mindmapNodeId String     @map("mindmap_node_id")
+  type         String      // VIDEO, PDF, LINK, etc.
+  url          String
+  title        String
+  
+  // Relations
+  mindmapNode  MindMapNode @relation(fields: [mindmapNodeId], references: [id])
+}
+
+// Club model for student organizations
+model Club {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  description   String?
+  coordinatorId String    @map("coordinator_id")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  coordinator  User      @relation("ClubCoordinator", fields: [coordinatorId], references: [id])
+  events       Event[]
+}
+
+// Event model for club activities
+model Event {
+  id            String    @id @default(uuid())
+  clubId        String    @map("club_id")
+  title         String
+  description   String?
+  startDateTime DateTime  @map("start_date_time")
+  endDateTime   DateTime  @map("end_date_time")
+  location      String?
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdById   String    @map("created_by_id")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  club         Club      @relation(fields: [clubId], references: [id])
+  createdBy    User      @relation("EventCreator", fields: [createdById], references: [id])
+  documents    EventDocument[]
+}
+
+// Documents associated with events
+model EventDocument {
+  id        String    @id @default(uuid())
+  eventId   String    @map("event_id")
+  fileUrl   String    @map("file_url")
+  fileType  String    @map("file_type") // PDF, DOC, etc.
+  uploadedAt DateTime  @default(now())
+  
+  // Relations
+  event      Event     @relation(fields: [eventId], references: [id])
+}

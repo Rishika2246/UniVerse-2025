@@ -1,0 +1,60 @@
+{
+  "name": "academic-management-system",
+  "version": "1.0.0",
+  "description": "Backend for Integrated Academic and Examination Management System",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "dev:quiet": "NODE_ENV=production node src/index.js",
+    "dev:watch": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "build": "prisma generate && prisma migrate deploy",
+    "prisma:migrate": "npx prisma migrate dev --name init",
+    "prisma:studio": "npx prisma studio",
+    "seed": "node prisma/seed.js",
+    "seed:massive": "node prisma/massiveSeed.js",
+    "seed:enhanced": "node prisma/enhancedSeed.js",
+    "seed:csv": "node prisma/csvStudentImport.js",
+    "import:csv": "node prisma/importStudentData.js",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "adm-zip": "^0.5.16",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.10",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.2",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^6.9.5",
+    "pdfkit": "^0.17.2",
+    "qrcode": "^1.5.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0",
+    "prisma": "^5.22.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}

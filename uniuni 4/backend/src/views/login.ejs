@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Admin Login' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <div class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white/90 border border-cyan-200 rounded-2xl shadow-xl p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+          <span class="text-white font-bold text-lg">U</span>
+        </div>
+        <div>
+          <p class="text-cyan-700 text-xl font-bold">UniVerse</p>
+          <p class="text-gray-500 text-xs">Admin Portal</p>
+        </div>
+      </div>
+      <p class="text-gray-800 text-2xl font-semibold mb-4">Admin Login</p>
+      <% if (error) { %>
+        <div class="mb-4 px-3 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200"><%= error %></div>
+      <% } %>
+      <form method="post" action="/admin/login" class="space-y-4">
+        <div>
+          <label for="email" class="block text-sm text-gray-600 mb-1">Email</label>
+          <input id="email" type="email" name="email" required class="w-full px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-400" placeholder="admin@university.edu">
+        </div>
+        <div>
+          <label for="password" class="block text-sm text-gray-600 mb-1">Password</label>
+          <input id="password" type="password" name="password" required class="w-full px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-400" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 text-white font-semibold shadow-lg">Login</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

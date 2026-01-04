@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Users' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <%- include('partials/nav') %>
+  <main class="max-w-6xl mx-auto p-6 space-y-6">
+    <div class="bg-white/90 rounded-2xl border border-cyan-200">
+      <div class="px-6 py-4 border-b border-cyan-200 flex items-center gap-2">
+        <form method="get" action="/admin/users" class="flex items-center gap-2 w-full">
+          <input type="text" name="q" placeholder="Search by name, email, roll" value="<%= typeof q !== 'undefined' ? q : '' %>" class="flex-1 px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-400" />
+          <select name="role" class="px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 focus:outline-none focus:border-cyan-400">
+            <option value="ALL" <%= (role === 'ALL') ? 'selected' : '' %>>All Roles</option>
+            <option value="ADMIN" <%= (role === 'ADMIN') ? 'selected' : '' %>>Admin</option>
+            <option value="STUDENT" <%= (role === 'STUDENT') ? 'selected' : '' %>>Student</option>
+            <option value="FACULTY" <%= (role === 'FACULTY') ? 'selected' : '' %>>Faculty</option>
+            <option value="SEATING_MANAGER" <%= (role === 'SEATING_MANAGER') ? 'selected' : '' %>>Seating Manager</option>
+            <option value="CLUB_COORDINATOR" <%= (role === 'CLUB_COORDINATOR') ? 'selected' : '' %>>Club Coordinator</option>
+          </select>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 text-white">Apply</button>
+          <a href="/admin/users/export.csv" class="ml-auto px-4 py-2 rounded-xl bg-gradient-to-r from-sky-300 to-cyan-400 text-white">Export CSV</a>
+        </form>
+      </div>
+    </div>
+
+    <% const faculty = users.filter(u => u.roles.some(rr => rr.role.name === 'FACULTY')); %>
+    <% const students = users.filter(u => u.roles.some(rr => rr.role.name === 'STUDENT')); %>
+    <% const seatingManagers = users.filter(u => u.roles.some(rr => rr.role.name === 'SEATING_MANAGER')); %>
+    <% const clubCoordinators = users.filter(u => u.roles.some(rr => rr.role.name === 'CLUB_COORDINATOR')); %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-cyan-200 flex items-center justify-between">
+          <p class="text-cyan-700 text-lg font-semibold">Faculty</p>
+          <span class="px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 text-sm border border-cyan-200"><%= faculty.length %></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-cyan-50 text-cyan-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Roll</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-cyan-100 text-gray-700">
+              <% for (const u of faculty) { %>
+                <tr>
+                  <td class="px-4 py-2"><%= u.fullName %></td>
+                  <td class="px-4 py-2"><%= u.email %></td>
+                  <td class="px-4 py-2"><%= u.rollNo || '' %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-cyan-200 flex items-center justify-between">
+          <p class="text-cyan-700 text-lg font-semibold">Students</p>
+          <span class="px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 text-sm border border-cyan-200"><%= students.length %></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-cyan-50 text-cyan-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Roll</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-cyan-100 text-gray-700">
+              <% for (const u of students) { %>
+                <tr>
+                  <td class="px-4 py-2"><%= u.fullName %></td>
+                  <td class="px-4 py-2"><%= u.email %></td>
+                  <td class="px-4 py-2"><%= u.rollNo || '' %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-cyan-200 flex items-center justify-between">
+          <p class="text-cyan-700 text-lg font-semibold">Seating Managers</p>
+          <span class="px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 text-sm border border-cyan-200"><%= seatingManagers.length %></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-cyan-50 text-cyan-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Roll</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-cyan-100 text-gray-700">
+              <% for (const u of seatingManagers) { %>
+                <tr>
+                  <td class="px-4 py-2"><%= u.fullName %></td>
+                  <td class="px-4 py-2"><%= u.email %></td>
+                  <td class="px-4 py-2"><%= u.rollNo || '' %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-cyan-200 flex items-center justify-between">
+          <p class="text-cyan-700 text-lg font-semibold">Club Coordinators</p>
+          <span class="px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 text-sm border border-cyan-200"><%= clubCoordinators.length %></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-cyan-50 text-cyan-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Roll</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-cyan-100 text-gray-700">
+              <% for (const u of clubCoordinators) { %>
+                <tr>
+                  <td class="px-4 py-2"><%= u.fullName %></td>
+                  <td class="px-4 py-2"><%= u.email %></td>
+                  <td class="px-4 py-2"><%= u.rollNo || '' %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

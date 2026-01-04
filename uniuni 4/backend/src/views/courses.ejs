@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Courses' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <%- include('partials/nav') %>
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-cyan-200">
+        <form method="get" action="/admin/courses" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-600">Search</label>
+            <input type="text" name="q" placeholder="Search by code, name, department" value="<%= (typeof q !== 'undefined' ? q : '') %>" class="w-full px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-400" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Department</label>
+            <input type="text" name="department" value="<%= (typeof department !== 'undefined' ? department : '') %>" class="w-full px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 focus:outline-none focus:border-cyan-400" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Semester</label>
+            <input type="text" name="semester" value="<%= (typeof semester !== 'undefined' ? semester : '') %>" class="w-full px-4 py-2 rounded-xl bg-white border border-cyan-200 text-gray-800 focus:outline-none focus:border-cyan-400" />
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 text-white">Apply</button>
+            <a href="/admin/courses/export.csv" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-300 to-cyan-400 text-white">Export CSV</a>
+          </div>
+        </form>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-cyan-50 text-cyan-700">
+            <tr>
+              <th class="px-6 py-3 text-left">Code</th>
+              <th class="px-6 py-3 text-left">Name</th>
+              <th class="px-6 py-3 text-left">Department</th>
+              <th class="px-6 py-3 text-left">Semester</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-cyan-100 text-gray-700">
+            <% courses.forEach(function(c) { %>
+              <tr>
+                <td class="px-6 py-3"><%= c.code %></td>
+                <td class="px-6 py-3"><%= c.name %></td>
+                <td class="px-6 py-3"><%= c.department %></td>
+                <td class="px-6 py-3"><%= c.semester %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,7 @@
+This is a test file for AI notes generation.
+
+Binary trees are hierarchical data structures where each node has at most two children, referred to as left child and right child. The structure includes key terminology like root (topmost node), leaves (nodes without children), and height (longest path from root to leaf).
+
+Tree traversals provide different ways to visit nodes: Inorder gives sorted order for BSTs, Preorder helps create copies, Postorder enables deletion, and Level-order performs breadth-first exploration.
+
+Performance varies with tree balance - balanced trees achieve O(log n) operations while worst-case scenarios may degrade to O(n). Applications span file systems, database indexing, and expression parsing, making binary trees essential for efficient data organization.

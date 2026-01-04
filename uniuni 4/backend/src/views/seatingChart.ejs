@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<%- include('partials/head', { title: 'Seating Chart' }) %>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100">
+  <%- include('partials/nav') %>
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="bg-white/90 rounded-2xl border border-cyan-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-cyan-200">
+        <p class="text-cyan-700 text-xl font-semibold">Seating Chart</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-cyan-50 text-cyan-700">
+            <tr>
+              <th class="px-6 py-3 text-left">Student</th>
+              <th class="px-6 py-3 text-left">Roll No</th>
+              <th class="px-6 py-3 text-left">Room</th>
+              <th class="px-6 py-3 text-left">Row</th>
+              <th class="px-6 py-3 text-left">Col</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-cyan-100 text-gray-700">
+            <% for (const a of allocations) { %>
+              <tr>
+                <td class="px-6 py-3"><%= a.student.fullName %></td>
+                <td class="px-6 py-3"><%= a.student.rollNo %></td>
+                <td class="px-6 py-3"><%= a.seat.room.name %></td>
+                <td class="px-6 py-3"><%= a.seat.rowNumber %></td>
+                <td class="px-6 py-3"><%= a.seat.colNumber %></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

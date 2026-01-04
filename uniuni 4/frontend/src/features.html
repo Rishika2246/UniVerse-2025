@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniVerse - Features Overview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #1a2332;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 52px;
+            color: white;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 22px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #67e8f9;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #67e8f9, #a78bfa);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(103, 232, 249, 0.3);
+            border-color: rgba(103, 232, 249, 0.5);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: rgba(103, 232, 249, 0.2);
+            color: #67e8f9;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid rgba(103, 232, 249, 0.3);
+        }
+
+        .category-header {
+            color: white;
+            font-size: 32px;
+            margin: 60px 0 30px 0;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .category-icon {
+            font-size: 40px;
+        }
+
+        /* Role-specific color coding */
+        .role-student { border-left: 4px solid #67e8f9; }
+        .role-faculty { border-left: 4px solid #a78bfa; }
+        .role-admin { border-left: 4px solid #fbbf24; }
+        .role-all { border-left: 4px solid #34d399; }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .role-badge.student { background: rgba(103, 232, 249, 0.3); color: #67e8f9; }
+        .role-badge.faculty { background: rgba(167, 139, 250, 0.3); color: #a78bfa; }
+        .role-badge.admin { background: rgba(251, 191, 36, 0.3); color: #fbbf24; }
+        .role-badge.all { background: rgba(52, 211, 153, 0.3); color: #34d399; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 UniVerse Features</h1>
+            <p>Comprehensive Campus Management System</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">22+</div>
+                    <div class="stat-label">Feature Categories</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">User Roles</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Interactive</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication & Security -->
+        <div class="category-header">
+            <span class="category-icon">🔐</span>
+            <span>Authentication & Security</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">👤</div>
+                <div class="feature-title">Multi-Role Authentication</div>
+                <div class="feature-desc">Secure login system supporting 5 different roles with personalized dashboards and access controls.</div>
+                <div class="feature-tags">
+                    <span class="tag">Student</span>
+                    <span class="tag">Faculty</span>
+                    <span class="tag">Admin</span>
+                    <span class="tag">Club Coordinator</span>
+                    <span class="tag">Seating Manager</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">😊</div>
+                <div class="feature-title">Face Recognition Login</div>
+                <div class="feature-desc">AI-powered facial recognition for quick and secure access to the platform.</div>
+                <div class="feature-tags">
+                    <span class="tag">AI/ML</span>
+                    <span class="tag">Biometric</span>
+                    <span class="tag">Fast Access</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🔑</div>
+                <div class="feature-title">Multi-Factor Authentication</div>
+                <div class="feature-desc">Enhanced security with MFA support including OTP, authenticator apps, and backup codes.</div>
+                <div class="feature-tags">
+                    <span class="tag">2FA</span>
+                    <span class="tag">OTP</span>
+                    <span class="tag">Security</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+        </div>
+
+        <!-- Student Features -->
+        <div class="category-header">
+            <span class="category-icon">👨‍🎓</span>
+            <span>Student Features</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-student">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Academic Dashboard</div>
+                <div class="feature-desc">Real-time visualization of attendance, CGPA, current courses, and academic achievements.</div>
+                <div class="feature-tags">
+                    <span class="tag">Charts</span>
+                    <span class="tag">Live Data</span>
+                    <span class="tag">Performance</span>
+                </div>
+                <div class="role-badge student">STUDENT ONLY</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">✅</div>
+                <div class="feature-title">Smart Attendance Tracking</div>
+                <div class="feature-desc">Automated attendance system with QR codes, geofencing, and real-time percentage calculations.</div>
+                <div class="feature-tags">
+                    <span class="tag">QR Code</span>
+                    <span class="tag">GPS</span>
+                    <span class="tag">Automated</span>
+                </div>
+                <div class="role-badge student">STUDENT ONLY</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">CGPA Calculator</div>
+                <div class="feature-desc">Track semester-wise grades, calculate CGPA, and view academic performance trends.</div>
+                <div class="feature-tags">
+                    <span class="tag">Grades</span>
+                    <span class="tag">Analytics</span>
+                    <span class="tag">Trends</span>
+                </div>
+                <div class="role-badge student">STUDENT ONLY</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">🏆</div>
+                <div class="feature-title">Achievements & Badges</div>
+                <div class="feature-desc">Gamification system with points, badges, and leaderboards for academic and extracurricular activities.</div>
+                <div class="feature-tags">
+                    <span class="tag">Gamification</span>
+                    <span class="tag">Leaderboard</span>
+                    <span class="tag">Rewards</span>
+                </div>
+                <div class="role-badge student">STUDENT ONLY</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">💺</div>
+                <div class="feature-title">Exam Seat Allocation</div>
+                <div class="feature-desc">View exam schedules, assigned seats with 3D hall visualization, and seating plans.</div>
+                <div class="feature-tags">
+                    <span class="tag">3D View</span>
+                    <span class="tag">Exams</span>
+                    <span class="tag">Seating</span>
+                </div>
+                <div class="role-badge student">STUDENT ONLY</div>
+            </div>
+        </div>
+
+        <!-- Faculty Features -->
+        <div class="category-header">
+            <span class="category-icon">👨‍🏫</span>
+            <span>Faculty Features</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-faculty">
+                <div class="feature-icon">📚</div>
+                <div class="feature-title">Course Management</div>
+                <div class="feature-desc">Manage course content, assignments, announcements, and student enrollment.</div>
+                <div class="feature-tags">
+                    <span class="tag">Courses</span>
+                    <span class="tag">Assignments</span>
+                    <span class="tag">Content</span>
+                </div>
+                <div class="role-badge faculty">FACULTY</div>
+            </div>
+            <div class="feature-card role-faculty">
+                <div class="feature-icon">📝</div>
+                <div class="feature-title">Grading System</div>
+                <div class="feature-desc">Efficient grading interface with automated calculations, rubrics, and grade distribution analytics.</div>
+                <div class="feature-tags">
+                    <span class="tag">Grades</span>
+                    <span class="tag">Analytics</span>
+                    <span class="tag">Automation</span>
+                </div>
+                <div class="role-badge faculty">FACULTY</div>
+            </div>
+            <div class="feature-card role-faculty">
+                <div class="feature-icon">👥</div>
+                <div class="feature-title">Class Analytics</div>
+                <div class="feature-desc">View class performance, attendance trends, and student engagement metrics.</div>
+                <div class="feature-tags">
+                    <span class="tag">Insights</span>
+                    <span class="tag">Performance</span>
+                    <span class="tag">Reports</span>
+                </div>
+                <div class="role-badge faculty">FACULTY</div>
+            </div>
+        </div>
+
+        <!-- AI & Smart Features -->
+        <div class="category-header">
+            <span class="category-icon">🤖</span>
+            <span>AI & Smart Features</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">🗣️</div>
+                <div class="feature-title">AI Avatar Assistants</div>
+                <div class="feature-desc">Virtual AI assistants to help with navigation, queries, and personalized recommendations.</div>
+                <div class="feature-tags">
+                    <span class="tag">AI</span>
+                    <span class="tag">Chat</span>
+                    <span class="tag">Support</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">Smart Recommendations</div>
+                <div class="feature-desc">AI-powered suggestions for courses, clubs, events, and career paths based on interests.</div>
+                <div class="feature-tags">
+                    <span class="tag">ML</span>
+                    <span class="tag">Personalized</span>
+                    <span class="tag">Suggestions</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+        </div>
+
+        <!-- Exam Management -->
+        <div class="category-header">
+            <span class="category-icon">📝</span>
+            <span>Exam Management</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-admin">
+                <div class="feature-icon">🗓️</div>
+                <div class="feature-title">Exam Scheduling</div>
+                <div class="feature-desc">Automated exam timetable generation with conflict detection and optimization.</div>
+                <div class="feature-tags">
+                    <span class="tag">Automation</span>
+                    <span class="tag">Scheduling</span>
+                    <span class="tag">Optimization</span>
+                </div>
+                <div class="role-badge admin">ADMIN</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">🏛️</div>
+                <div class="feature-title">Seating Arrangement</div>
+                <div class="feature-desc">Intelligent seating allocation with hall management, capacity planning, and conflict resolution.</div>
+                <div class="feature-tags">
+                    <span class="tag">Smart Allocation</span>
+                    <span class="tag">3D View</span>
+                    <span class="tag">Halls</span>
+                </div>
+                <div class="role-badge admin">SEATING MANAGER</div>
+            </div>
+            <div class="feature-card role-faculty">
+                <div class="feature-icon">👁️</div>
+                <div class="feature-title">Invigilation Management</div>
+                <div class="feature-desc">Assign invigilators, manage duty rosters, and track exam supervision.</div>
+                <div class="feature-tags">
+                    <span class="tag">Supervision</span>
+                    <span class="tag">Roster</span>
+                    <span class="tag">Duty</span>
+                </div>
+                <div class="role-badge faculty">FACULTY</div>
+            </div>
+        </div>
+
+        <!-- Club & Activities -->
+        <div class="category-header">
+            <span class="category-icon">🎪</span>
+            <span>Clubs & Activities</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Club Directory</div>
+                <div class="feature-desc">Browse all campus clubs, view activities, join clubs, and track membership.</div>
+                <div class="feature-tags">
+                    <span class="tag">Discovery</span>
+                    <span class="tag">Join</span>
+                    <span class="tag">Activities</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">🎉</div>
+                <div class="feature-title">Event Management</div>
+                <div class="feature-desc">Create, manage, and promote campus events with registration and attendance tracking.</div>
+                <div class="feature-tags">
+                    <span class="tag">Events</span>
+                    <span class="tag">Registration</span>
+                    <span class="tag">Promotion</span>
+                </div>
+                <div class="role-badge admin">CLUB COORDINATOR</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">💰</div>
+                <div class="feature-title">Budget Management</div>
+                <div class="feature-desc">Track club finances, manage budgets, expenses, and generate financial reports.</div>
+                <div class="feature-tags">
+                    <span class="tag">Finance</span>
+                    <span class="tag">Expenses</span>
+                    <span class="tag">Reports</span>
+                </div>
+                <div class="role-badge admin">CLUB COORDINATOR</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">👥</div>
+                <div class="feature-title">Member Management</div>
+                <div class="feature-desc">Manage club members, roles, permissions, and track member engagement.</div>
+                <div class="feature-tags">
+                    <span class="tag">Members</span>
+                    <span class="tag">Roles</span>
+                    <span class="tag">Engagement</span>
+                </div>
+                <div class="role-badge admin">CLUB COORDINATOR</div>
+            </div>
+        </div>
+
+        <!-- AR/VR & Innovation -->
+        <div class="category-header">
+            <span class="category-icon">🥽</span>
+            <span>AR/VR & Innovation</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">🗺️</div>
+                <div class="feature-title">AR Campus Maps</div>
+                <div class="feature-desc">Interactive augmented reality maps for easy campus navigation and location discovery.</div>
+                <div class="feature-tags">
+                    <span class="tag">AR</span>
+                    <span class="tag">Navigation</span>
+                    <span class="tag">Interactive</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🏛️</div>
+                <div class="feature-title">VR Campus Tour</div>
+                <div class="feature-desc">Virtual reality campus tours for prospective students and remote exploration.</div>
+                <div class="feature-tags">
+                    <span class="tag">VR</span>
+                    <span class="tag">Virtual Tour</span>
+                    <span class="tag">3D</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">🎓</div>
+                <div class="feature-title">3D Classroom View</div>
+                <div class="feature-desc">Visualize exam halls and classrooms in 3D before exams and events.</div>
+                <div class="feature-tags">
+                    <span class="tag">3D</span>
+                    <span class="tag">Visualization</span>
+                    <span class="tag">Seats</span>
+                </div>
+                <div class="role-badge student">STUDENT</div>
+            </div>
+        </div>
+
+        <!-- Alumni & Networking -->
+        <div class="category-header">
+            <span class="category-icon">🤝</span>
+            <span>Alumni & Networking</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">🌐</div>
+                <div class="feature-title">Alumni Network</div>
+                <div class="feature-desc">Connect with alumni, access mentorship programs, and explore career opportunities.</div>
+                <div class="feature-tags">
+                    <span class="tag">Networking</span>
+                    <span class="tag">Mentorship</span>
+                    <span class="tag">Careers</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-student">
+                <div class="feature-icon">💼</div>
+                <div class="feature-title">Career Services</div>
+                <div class="feature-desc">Job postings, internship opportunities, and career guidance from alumni.</div>
+                <div class="feature-tags">
+                    <span class="tag">Jobs</span>
+                    <span class="tag">Internships</span>
+                    <span class="tag">Guidance</span>
+                </div>
+                <div class="role-badge student">STUDENT</div>
+            </div>
+        </div>
+
+        <!-- Analytics & Reports -->
+        <div class="category-header">
+            <span class="category-icon">📈</span>
+            <span>Analytics & Reports</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-admin">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Real-time Dashboards</div>
+                <div class="feature-desc">Live data visualization with interactive charts, graphs, and performance metrics.</div>
+                <div class="feature-tags">
+                    <span class="tag">Live Data</span>
+                    <span class="tag">Charts</span>
+                    <span class="tag">Metrics</span>
+                </div>
+                <div class="role-badge admin">ADMIN</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">📋</div>
+                <div class="feature-title">Custom Reports</div>
+                <div class="feature-desc">Generate custom reports for attendance, grades, events, and administrative data.</div>
+                <div class="feature-tags">
+                    <span class="tag">Reports</span>
+                    <span class="tag">Export</span>
+                    <span class="tag">Analytics</span>
+                </div>
+                <div class="role-badge admin">ADMIN</div>
+            </div>
+            <div class="feature-card role-faculty">
+                <div class="feature-icon">📉</div>
+                <div class="feature-title">Performance Analytics</div>
+                <div class="feature-desc">Track student performance trends, identify at-risk students, and generate insights.</div>
+                <div class="feature-tags">
+                    <span class="tag">Trends</span>
+                    <span class="tag">Insights</span>
+                    <span class="tag">Early Warning</span>
+                </div>
+                <div class="role-badge faculty">FACULTY</div>
+            </div>
+        </div>
+
+        <!-- Additional Features -->
+        <div class="category-header">
+            <span class="category-icon">⭐</span>
+            <span>Additional Features</span>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card role-all">
+                <div class="feature-icon">💬</div>
+                <div class="feature-title">Communication Hub</div>
+                <div class="feature-desc">Integrated messaging, announcements, and notifications for seamless communication.</div>
+                <div class="feature-tags">
+                    <span class="tag">Messaging</span>
+                    <span class="tag">Notifications</span>
+                    <span class="tag">Announcements</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">📱</div>
+                <div class="feature-title">Mobile Responsive</div>
+                <div class="feature-desc">Fully responsive design that works perfectly on all devices and screen sizes.</div>
+                <div class="feature-tags">
+                    <span class="tag">Responsive</span>
+                    <span class="tag">Mobile</span>
+                    <span class="tag">Adaptive</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🎨</div>
+                <div class="feature-title">Glassmorphism UI</div>
+                <div class="feature-desc">Modern design with glassmorphism effects, smooth animations, and powder blue theme.</div>
+                <div class="feature-tags">
+                    <span class="tag">Modern Design</span>
+                    <span class="tag">Animations</span>
+                    <span class="tag">Beautiful</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-admin">
+                <div class="feature-icon">⚙️</div>
+                <div class="feature-title">System Configuration</div>
+                <div class="feature-desc">Comprehensive admin controls for system settings, user management, and permissions.</div>
+                <div class="feature-tags">
+                    <span class="tag">Settings</span>
+                    <span class="tag">Control</span>
+                    <span class="tag">Management</span>
+                </div>
+                <div class="role-badge admin">ADMIN</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🔔</div>
+                <div class="feature-title">Smart Notifications</div>
+                <div class="feature-desc">Intelligent notification system with priority levels, scheduling, and multi-channel delivery.</div>
+                <div class="feature-tags">
+                    <span class="tag">Alerts</span>
+                    <span class="tag">Priority</span>
+                    <span class="tag">Multi-channel</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+            <div class="feature-card role-all">
+                <div class="feature-icon">🌙</div>
+                <div class="feature-title">Theme Customization</div>
+                <div class="feature-desc">Personalize your experience with dark mode and custom color schemes.</div>
+                <div class="feature-tags">
+                    <span class="tag">Dark Mode</span>
+                    <span class="tag">Themes</span>
+                    <span class="tag">Customization</span>
+                </div>
+                <div class="role-badge all">ALL ROLES</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
